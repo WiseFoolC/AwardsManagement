@@ -1,0 +1,19 @@
+{% macro render_form_field(field, id) %}
+{% if field.errors %}
+  <div class="form-group has-error has-feedback">
+{% else %}
+  <div class="form-group has-feedback">
+{% endif %}
+    {{ field.label(for=id, class="col-sm-2 control-label") }}
+    <div class="col-sm-10">
+      {{ field(class="form-control", id=id) | safe }}
+      {% if field.errors %}
+        <small class="help-block" data-bv-for={{ kwargs['id'] }}>
+          {% for error in field.errors %}
+            {{ error }}<br>
+          {% endfor %}
+        </small>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}

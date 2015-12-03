@@ -1,0 +1,137 @@
+{% extends "admin/base.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-12">
+          <!-- Widget: user widget style 1 -->
+          <div class="box box-widget widget-user-2">
+            <!-- Add the bg color to the header using any of the bg-* classes -->
+            <div class="widget-user-header bg-blue">
+              <h3>2015年ACM-ICPC亚洲区域赛北京站
+                <a class="btn btn-default btn-flat pull-right"><i class="fa fa-plus"></i></a>
+              </h3>
+              <p>2015年11月21日 - 2015年11月22日</p>
+
+            </div>
+            <div class="box-body no-padding">
+              <table class="table table-bordered">
+                <thead><tr><th>奖项编号</th><th>获奖等级</th><th>获奖学生</th><th>指导教师</th><th>审核状态</th></tr></thead>
+                <tbody>
+                <tr>
+                  <td>W2015001001</td><td>全国二等奖</td>
+                  <td>黄坤 黄宁桥 王璨</td><td>杜晓宇</td>
+                  <td><label class="label bg-green">二档</label></td>
+                </tr>
+                <tr>
+                  <td>W2015001002</td><td>全国三等奖</td>
+                  <td>黄坤 黄宁桥 王璨</td><td>杜晓宇</td>
+                  <td><label class="label bg-orange">教务处审批</label></td>
+                </tr>
+                <tr>
+                  <td>W2015001003</td><td>全国二等奖</td>
+                  <td>黄坤 黄宁桥 王璨</td><td>杜晓宇</td>
+                  <td><label class="label bg-maroon">学院审批</label></td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="box-footer clearfix">
+              <ul class="pagination pagination-sm no-margin pull-right">
+                <li><a href="#">«</a></li>
+                <li><a href="#">1</a></li>
+                <li><a href="#">2</a></li>
+                <li><a href="#">3</a></li>
+                <li><a href="#">»</a></li>
+              </ul>
+            </div>
+          </div>
+          <!-- /.widget-user -->
+    </div>
+    <div class="col-md-12">
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">奖项录入</h3>
+        </div>
+        <form class="form-horizontal">
+          <div class="box-body">
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">作品名称</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputPassword3" placeholder="作品名称">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">获奖等级</label>
+              <div class="col-sm-10">
+                <select class="form-control">
+                  <option>全国一等奖</option>
+                  <option>全国二等奖</option>
+                  <option>全国三等奖</option>
+                  <option>省级一等奖</option>
+                  <option>省级二等奖</option>
+                  <option>省级三等奖</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">获奖类型</label>
+              <div class="col-sm-10">
+                <label class="radio-inline">
+                  <input type="radio" id="inlineCheckbox1" value="1" name="awards_type"> 个人
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" id="inlineCheckbox2" value="2" name="awards_type"> 团体
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">获奖学生</label>
+              <div class="col-sm-10">
+                <select class="form-control">
+                  <option>学生1</option>
+                  <option>学生2</option>
+                  <option>学生3</option>
+
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">指导教师</label>
+              <div class="col-sm-10">
+                <select class="form-control">
+                  <option>老师1</option>
+                  <option>老师2</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">上传附件</label>
+              <div class="col-sm-10">
+                <input type="file" id="exampleInputFile">
+              </div>
+            </div>
+
+          </div>
+          <!-- /.box-body -->
+          <div class="box-footer text-center">
+            <button type="submit" class="btn btn-primary">提交</button>
+          </div>
+          <!-- /.box-footer -->
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
