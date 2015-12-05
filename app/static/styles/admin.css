@@ -1,0 +1,33 @@
+
+thead th {
+  font-weight: 700;
+  text-align: center;
+}
+
+.col-check {
+  width: 10%;
+  text-align: center;
+}
+
+.col-name {
+  text-align: center;
+  font-weight: 700;
+  font-size: larger;
+}
+
+.table .label {
+  display: inline-block;
+}
+
+.list-box-controls {
+  padding: 5px 10px;
+}
+
+.breadcrumb {
+  border-top: 3px solid #3c8dbc;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  background-color: #fff;
+  margin-bottom: 0;
+  font-weight: 700;
+  font-size: 18px;
+}
