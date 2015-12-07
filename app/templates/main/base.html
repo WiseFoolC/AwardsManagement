@@ -40,7 +40,7 @@
             <li><a href="">首页</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            {%- if current_user.is_authenticated() -%}
+            {%- if current_user.is_authenticated -%}
               <li><span>{{ current_user.username }}</span></li>
             {%- else -%}
               <li id="login-button"><a id="login" href="{{ url_for('admin.login') }}">登录</a></li>

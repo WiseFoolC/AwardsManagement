@@ -2,42 +2,36 @@
 {% from "macro/_page.html" import pagination_widget %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/admin.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='plugins/iCheck/square/blue.css') }}"/>
 {% endblock %}
-
 
 {% block content %}
   <div class="row">
     <div class="col-sm-12">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title"><i class="fa fa-users"></i> 用户管理</h3>
+          <h3 class="box-title"><i class="fa fa-leaf"></i> 竞赛管理</h3>
         </div>
         <div class="box-body no-padding">
           <div class="list-box-controls">
             <a class="btn btn-default btn-sm to_delete_user" data-toggle="modal" data-target="#myModal">
               <i class="fa fa-trash-o"></i> 删除</a>
             <a class="btn btn-default btn-sm item_edit"><i class="fa fa-pencil-square-o"></i> 修改</a>
-            <a class="btn btn-default btn-sm" href="{{ url_for('admin.user_add') }}"><i class="fa fa-user-plus"></i>
+            <a class="btn btn-default btn-sm" href="{{ url_for('admin.contest_add') }}"><i class="fa fa-plus"></i>
               添加</a>
           </div>
           <table class="table table-bordered table-striped" style="text-align: center">
             <thead><tr>
               <th class="col-check">选择</th>
-              <th class="col-name">姓名</th><th>部门</th><th>权限</th>
+              <th class="col-name">名称</th>
             </tr></thead>
             <tbody>
-            {% for user in user_list %}
+            {% for contest in contest_list %}
               <tr>
               <td class="col-check">
-                <label><input type="radio" name="user" value="{{ user.id }}"></label>
+                <label><input type="radio" name="contest" value="{{ contest.id }}"></label>
               </td>
-              <td class="col-name">{{ user.username }}</td>
-              <td>{{ user.department if user.department else '' }}</td>
-              <td>
-                <label class="label label-primary">{{ user.permission }}</label>
-              </td>
+              <td class="col-name">{{ contest.name }}</td>
               </tr>
             {% endfor %}
             </tbody>
@@ -45,7 +39,7 @@
         </div>
         <!-- /.box-body -->
         <div class="box-footer clearfix">
-          {{ pagination_widget(pagination, '.user') }}
+          {{ pagination_widget(pagination, '.series') }}
         </div>
       </div>
     </div>
@@ -65,11 +59,11 @@
     $(document).ready(function() {
       make_iCheck();
       $('.item_edit').on('click', function() {
-        var $check = $('input[name="user"]:checked');
+        var $check = $('input[name="contest"]:checked');
         if ($check.length <= 0) {
           return false;
         }
-        var url = "{{ url_for('admin.user_edit', id='') }}";
+        var url = "{{ url_for('admin.contest_edit', id='') }}";
         var id = $check.val();
         window.location.href = url + id;
       });

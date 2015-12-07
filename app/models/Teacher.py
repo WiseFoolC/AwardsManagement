@@ -1,3 +1,5 @@
+# coding=utf-8
+from flask import current_app
 from . import db
 
 
@@ -8,3 +10,59 @@ class Teacher(db.Model):
 
     def __repr__(self):
         return '<Teacher %s>' % self.name
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def remove(self):
+        db.session.remove(self)
+        db.session.commit()
+
+
+def get_by_id(id):
+    return Teacher.query.filter(Teacher.id == id).first()
+
+
+def get_list_by_name(name):
+    return Teacher.query.filter(Teacher.name == name).all()
+
+
+def get_list_by_department(department):
+    return Teacher.query.filter(Teacher.department == department).all()
+
+
+def get_count():
+    return Teacher.query.count()
+
+
+def get_list_pageable(page, per_page):
+    return Teacher.query.order_by(Teacher.id)\
+        .paginate(page, per_page, error_out=False)
+
+
+def create_teacher(teacher_form):
+    try:
+        teacher = Teacher()
+        teacher.name = teacher_form.name.data
+        teacher.department = teacher_form.department.data
+        teacher.save()
+        current_app.logger.info(u'录入教师 %s 成功', teacher.name)
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'录入教师 %s 失败', teacher_form.name.data)
+        current_app.logger.error(e)
+        return 'FAIL'
+
+
+def update_teacher(teacher, teacher_form):
+    try:
+        teacher.name = teacher_form.name.data
+        teacher.department = teacher_form.department.data
+        teacher.save()
+        current_app.logger.info(u'更新教师 %s 成功', teacher.name)
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'更新教师 %s 失败', teacher_form.name.data)
+        current_app.logger.error(e)
+        return 'FAIL'

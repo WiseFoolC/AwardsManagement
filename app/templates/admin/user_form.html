@@ -28,7 +28,7 @@
           <div class="box-body">
             {{ user_form.hidden_tag() }}
             {{ render_form_field(user_form.username, id='inputUsername') }}
-            {% if not edit %}
+            {% if add %}
             {{ render_form_field(user_form.password, id='inputPassword') }}
             {% endif %}
             {{ render_form_field(user_form.department, id='inputDepartment') }}

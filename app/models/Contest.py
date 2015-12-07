@@ -1,5 +1,6 @@
 # coding=utf-8
-from . import db
+from flask import current_app
+from . import db, ContestSeries
 from datetime import date
 
 ContestLevel = {
@@ -34,6 +35,14 @@ class Contest(db.Model):
     def __repr__(self):
         return '<Contest %s %s>' % (self.contest_id, self.name_cn)
 
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def remove(self):
+        db.session.remove(self)
+        db.session.commit()
+
 
 def generate_next_contest_id(year):
     ''' generate next contest id for the new contest's year '''
@@ -47,4 +56,60 @@ def generate_next_contest_id(year):
         new_id = str(last_contest_id + 1)
         return 'W%d%s' % (year, new_id.rjust(3, '0'))
 
+
+def get_by_id(id):
+    return Contest.query.filter(Contest.id == id).first()
+
+
+def get_count():
+    return Contest.query.count()
+
+
+def get_list_pageable(page, per_page):
+    return Contest.query.order_by(Contest.id)\
+        .paginate(page, per_page, error_out=False)
+
+
+def create_contest(contest_form):
+    try:
+        contest = Contest()
+        contest.contest_id = generate_next_contest_id(contest_form.year.data)
+        contest.name_cn = contest_form.name_cn.data
+        contest.name_en = contest_form.name_en.data
+        contest.level = ContestLevel[contest_form.level.data]
+        contest.organizer = contest_form.organizer.data
+        contest.co_organizer = contest_form.co_organizer.data
+        contest.year = contest_form.year.data
+        contest.start_date = contest_form.start_date.data
+        contest.end_date = contest_form.end_date.data
+        contest.place = contest_form.place.data
+        contest.series = ContestSeries.get_by_id(contest_form.series_id.data)
+        contest.save()
+        current_app.logger.info(u'录入竞赛 %s 成功', contest.name_cn)
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'录入竞赛 %s 失败', contest_form.name_cn.data)
+        current_app.logger.error(e)
+        return 'FAIL'
+
+
+def update_contest(contest, contest_form):
+    try:
+        contest.name_cn = contest_form.name_cn.data
+        contest.name_en = contest_form.name_en.data
+        contest.level = ContestLevel[contest_form.level.data]
+        contest.organizer = contest_form.organizer.data
+        contest.co_organizer = contest_form.co_organizer.data
+        contest.year = contest_form.year.data
+        contest.start_date = contest_form.date_range.data[0]
+        contest.end_date = contest_form.date_range.data[1]
+        contest.place = contest_form.place.data
+        contest.series = ContestSeries.get_by_id(contest_form.series_id.data)
+        contest.save()
+        current_app.logger.info(u'更新竞赛 %s 成功', contest.name_cn)
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'更新竞赛 %s 失败', contest_form.name_cn.data)
+        current_app.logger.error(e)
+        return 'FAIL'
 

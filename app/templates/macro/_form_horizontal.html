@@ -6,7 +6,7 @@
   {% endif %}
       {{ field.label(for=id, class="col-sm-2 control-label") }}
       <div class="col-sm-9">
-        {{ field(class="form-control", id=id) | safe }}
+        {{ field(class="form-control", id=id, **kwargs) | safe }}
         {% if field.errors %}
           <small class="help-block" data-bv-for={{ kwargs['id'] }}>
             {% for error in field.errors %}
