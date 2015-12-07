@@ -20,6 +20,9 @@ class Config:
     REMEMBER_COOKIE_DURATION = timedelta(days=3)
     ''' file '''
     UPLOADED_RESOURCE_DEST = basedir + '/uploads/'
+    ''' admin '''
+    ADMIN_USER_PER_PAGE = 10
+
 
 
 class DevConfig(Config):
@@ -28,7 +31,7 @@ class DevConfig(Config):
 
 
 class DeployConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mssql+pymssql://sa:rayn2015@localhost:1433/demo?charset=utf8'
+    SQLALCHEMY_DATABASE_URI = 'mssql+pymssql://dxy:Dxyrjgcxy2015@210.41.228.124:1433/ACMS?charset=utf8'
 
 
 config = {

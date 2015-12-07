@@ -38,7 +38,8 @@
       <div class="navbar-custom-menu">
         <ul class="nav navbar-nav">
           {%- if current_user.is_authenticated() -%}
-            <li><span>{{ current_user.username }}</span></li>
+            <li><a href="" onclick="return false"><span>{{ current_user.username }}</span></a></li>
+            <li><a href="{{ url_for('admin.logout') }}"><span>注销</span></a></li>
           {% else %}
             <li><a href="{{ url_for('admin.login') }}"><span>登录</span></a></li>
           {% endif %}
@@ -51,6 +52,7 @@
     <section class="sidebar" style="height: auto;">
       <ul class="sidebar-menu">
         <li class="header">导航</li>
+        <li><a href="{{ url_for('admin.user') }}"><i class="fa fa-users"></i> <span>用户管理</span></a></li>
         <li><a href="{{ url_for('admin.series_add') }}"><i class="fa fa-flag"></i> <span>竞赛系列管理</span></a></li>
         <li><a href="{{ url_for('admin.teacher_add') }}"><i class="fa fa-user"></i> <span>教师管理</span></a></li>
       </ul>
