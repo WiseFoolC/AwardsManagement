@@ -6,6 +6,7 @@ basedir = os.path.abspath(os.path.dirname(__name__))
 
 class Constant:
     DEPARTMENT_CONFIG_DEST = basedir + '/department.ini'
+    LOG_DIR = basedir + '/log/awards.log'
 
 
 class Config:
@@ -15,6 +16,7 @@ class Config:
     ''' sql '''
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_RECORD_QUERIES = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     ''' session, cookie '''
     PERMANENT_SESSION_LIFETIME = timedelta(days=3)
     REMEMBER_COOKIE_DURATION = timedelta(days=3)
@@ -22,6 +24,10 @@ class Config:
     UPLOADED_RESOURCE_DEST = basedir + '/uploads/'
     ''' admin '''
     ADMIN_USER_PER_PAGE = 10
+    ADMIN_TEACHER_PER_PAGE = 10
+    ADMIN_SERIES_PER_PAGE = 10
+    ADMIN_CONTEST_PER_PAGE = 10
+    ADMIN_AWARDS_PER_PAGE = 10
 
 
 

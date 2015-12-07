@@ -60,9 +60,9 @@ def get_by_username(username):
     return User.query.filter(User.username == username).first()
 
 
-def get_list_with_page(page, per_page):
-    pagination = User.query.order_by(User.id).paginate(page, per_page, False)
-    return pagination
+def get_list_pageable(page, per_page):
+    return User.query.order_by(User.id)\
+        .paginate(page, per_page, error_out=False)
 
 
 def get_count():
@@ -73,16 +73,18 @@ def create_user(user_form):
     try:
         has_user = get_by_username(user_form.username.data)
         if has_user:
-            current_app.logger.error(u'用户 %s 已存在' % has_user.username)
+            current_app.logger.warning(u'用户 %s 已存在', has_user.username)
             return u"该用户名已经存在"
         user = User(user_form.username.data)
         user.password = user_form.password.data
         user.department = user_form.department.data
         user.permission = user_form.permission.data
         user.save()
+        current_app.logger.info(u'添加用户 %s 成功', user.username)
         return 'OK'
     except Exception, e:
-        current_app.logger.error(u'添加用户 %s 失败' % user_form.username.data)
+        current_app.logger.error(u'添加用户 %s 失败', user_form.username.data)
+        current_app.logger.error(e)
         return 'FAIL'
 
 
@@ -92,8 +94,11 @@ def update_user(user, user_form):
         user.department = user_form.department.data
         user.permission = user_form.permission.data
         user.save()
+        current_app.logger.info(u'更新用户 %s 成功', user.username)
         return 'OK'
     except Exception, e:
+        current_app.logger.error(u'更新用户 %s 失败', user_form.username.data)
+        current_app.logger.error(e)
         return 'FAIL'
 
 
@@ -101,6 +106,9 @@ def delete_by_id(id):
     try:
         user = get_by_id(id)
         user.remove()
+        current_app.logger.info(u'删除用户 %d 成功', id)
         return 'OK'
     except Exception, e:
+        current_app.logger.error(u'删除用户 %d 失败', id)
+        current_app.logger.error(e)
         return 'FAIL'

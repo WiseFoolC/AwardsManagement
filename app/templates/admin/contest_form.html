@@ -1,0 +1,60 @@
+{% extends "admin/base.html" %}
+{% from "macro/_form_horizontal.html" import render_form_field %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/daterangepicker/daterangepicker-bs3.css') }}">
+{% endblock %}
+
+{% block content_header %}
+  <div class="row">
+    <div class="col-sm-12">
+      <ol class="breadcrumb">
+        <li><a href="{{ url_for('admin.contest') }}">竞赛管理</a></li>
+        <li class="active">{{ title }}</li>
+      </ol>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+
+    <div class="col-md-12">
+      <div class="box box-primary">
+        <div class="box-header">
+          <h3 class="box-title">竞赛录入</h3>
+        </div>
+        <form action="{{ action }}" method="post" class="form-horizontal">
+          <div class="box-body">
+            {{ contest_form.hidden_tag() }}
+            {{ render_form_field(contest_form.name_cn, id='inputNameCN') }}
+            {{ render_form_field(contest_form.name_en, id='inputNameEN') }}
+            {{ render_form_field(contest_form.level, id='inputLevel') }}
+            {{ render_form_field(contest_form.series_id, id='inputSeries') }}
+            {{ render_form_field(contest_form.year, id='inputYear') }}
+            {{ render_form_field(contest_form.date_range, id='inputDateRange') }}
+            {{ render_form_field(contest_form.organizer, id='inputOrganizer') }}
+            {{ render_form_field(contest_form.co_organizer, id='inputCoOrganizer') }}
+            {{ render_form_field(contest_form.place, id='inputPlace') }}
+          </div>
+          <!-- /.box-body -->
+          <div class="box-footer text-center">
+            <button type="submit" class="btn btn-primary">提交</button>
+          </div>
+          <!-- /.box-footer -->
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='plugins/daterangepicker/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/daterangepicker/daterangepicker.js') }}"></script>
+<script>
+  $(document).ready(function() {
+    $('#inputDateRange').daterangepicker({format: 'YYYY/MM/DD'});
+  });
+
+</script>
+{% endblock %}
