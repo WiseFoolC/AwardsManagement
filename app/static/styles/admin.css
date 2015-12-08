@@ -9,7 +9,7 @@ thead th {
   text-align: center;
 }
 
-.col-name {
+td.col-name {
   text-align: center;
   font-weight: 700;
   font-size: larger;
@@ -17,6 +17,10 @@ thead th {
 
 .table .label {
   display: inline-block;
+}
+
+.table td {
+  vertical-align: middle !important;
 }
 
 .list-box-controls {
@@ -30,4 +34,46 @@ thead th {
   margin-bottom: 0;
   font-weight: 700;
   font-size: 18px;
+}
+
+.box-profile .profile-table {
+  border-top: 1px solid #f4f4f4;
+}
+.box-profile .profile-table td {
+  border-top: 0;
+  border-bottom: 1px solid #f4f4f4;
+  padding-bottom: 5px !important;
+  word-break: break-all;
+  word-wrap: break-word;
+  word-spacing: 15px;
+}
+
+.box-profile .profile-table td:first-child {
+  font-weight: bold;
+  width: 70px;
+}
+
+.box-profile .profile-table td:nth-child(2) {
+  text-align: right;
+}
+
+.contest-box .box-footer {
+  border-top: 0;
+  padding: 5px 3px 10px 3px !important;
+  vertical-align: middle;
+}
+
+.awards-table th,
+.awards-table td {
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+.widget-user-header .front {
+  margin-right: 5px;
+  width: 80px;
+  display: inline-block;
+}
+.widget-user-header .front .fa {
+  margin-right: 2px;
 }

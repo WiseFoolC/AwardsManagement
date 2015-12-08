@@ -1,3 +1,4 @@
+from flask import current_app
 from . import db
 
 class Resource(db.Model):
@@ -11,7 +12,18 @@ class Resource(db.Model):
                           nullable=False)
 
     awards = db.relationship('Awards',
-                             backref=db.backref('resource',
+                             backref=db.backref('resources',
                                                 cascade="all, delete-orphan",
                                                 passive_deletes=True,
                                                 lazy='dynamic'))
+
+    def __repr__(self):
+        return '<Resource %s>' % self.filename
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()

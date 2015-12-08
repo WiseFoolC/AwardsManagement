@@ -1,3 +1,4 @@
+from flask import current_app
 from . import db
 
 
@@ -11,3 +12,11 @@ class Student(db.Model):
 
     def __repr__(self):
         return '<Student %s %s>' % (self.stu_no, self.name)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()

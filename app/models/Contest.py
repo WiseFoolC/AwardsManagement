@@ -4,7 +4,7 @@ from . import db, ContestSeries
 from datetime import date
 
 ContestLevel = {
-    'nation' : u'国家',
+    'nation' : u'国家级',
     'province' : u'省级'
 }
 
@@ -76,12 +76,12 @@ def create_contest(contest_form):
         contest.contest_id = generate_next_contest_id(contest_form.year.data)
         contest.name_cn = contest_form.name_cn.data
         contest.name_en = contest_form.name_en.data
-        contest.level = ContestLevel[contest_form.level.data]
+        contest.level = contest_form.level.data
         contest.organizer = contest_form.organizer.data
         contest.co_organizer = contest_form.co_organizer.data
         contest.year = contest_form.year.data
-        contest.start_date = contest_form.start_date.data
-        contest.end_date = contest_form.end_date.data
+        contest.start_date = contest_form.date_range.data[0]
+        contest.end_date = contest_form.date_range.data[1]
         contest.place = contest_form.place.data
         contest.series = ContestSeries.get_by_id(contest_form.series_id.data)
         contest.save()
@@ -97,7 +97,7 @@ def update_contest(contest, contest_form):
     try:
         contest.name_cn = contest_form.name_cn.data
         contest.name_en = contest_form.name_en.data
-        contest.level = ContestLevel[contest_form.level.data]
+        contest.level = contest_form.level.data
         contest.organizer = contest_form.organizer.data
         contest.co_organizer = contest_form.co_organizer.data
         contest.year = contest_form.year.data

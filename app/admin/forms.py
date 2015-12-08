@@ -1,12 +1,12 @@
 # coding=utf-8
 from flask.ext.wtf import Form
 from wtforms import Field, StringField, PasswordField, BooleanField, \
-    SubmitField, SelectField, RadioField, DateField
-from wtforms.validators import Length
+    SubmitField, SelectField, RadioField, SelectMultipleField
+from wtforms.validators import Length, Optional
 from ..utils.validators import MyDataRequired
 from wtforms.widgets import TextInput
 from app import DepartmentList
-from app.models import User, Contest, ContestSeries
+from app.models import User, Contest, ContestSeries, Awards, Student, Teacher
 from datetime import date
 
 
@@ -61,9 +61,9 @@ class ContestForm(Form):
     name_cn = StringField(u'竞赛中文名', validators=[MyDataRequired()])
     name_en = StringField(u'竞赛英文名', validators=[MyDataRequired()])
     level = SelectField(u'竞赛等级', validators=[MyDataRequired()],
-                        choices=[item for item in Contest.ContestLevel.items()])
+                        choices=[(v, v) for v in Contest.ContestLevel.values()])
     organizer = StringField(u'主办方', validators=[MyDataRequired()])
-    co_organizer = StringField(u'承办方')
+    co_organizer = StringField(u'承办方', validators=[Optional()])
     year = SelectField(u'年份', coerce=int, default=date.today().year)
     date_range = DateRangeField(u'起止日期', validators=[MyDataRequired()],
                                 default=[date.today().strftime('%Y/%m/%d'), date.today().strftime('%Y/%m/%d')])
@@ -77,6 +77,14 @@ class ContestForm(Form):
         self.year.choices = [(year, year) for year in range(cur_year - 1, cur_year + 2)]
         series_list = ContestSeries.get_all()
         self.series_id.choices = [(series.id, series.name) for series in series_list]
+
+
+class AwardsForm(Form):
+    level = SelectField(u'获奖等级', choices=[(v, v) for v in Awards.AwardsLevel.values()])
+    title = StringField(u'作品名称', validators=[Optional()])
+    type = SelectField(u'奖励类型', choices=[(v, v) for v in Awards.AwardsType.values()])
+    teachers = SelectMultipleField(u'指导教师', validators=[MyDataRequired()])
+    students = SelectMultipleField(u'获奖学生', validators=[MyDataRequired()])
 
 
 

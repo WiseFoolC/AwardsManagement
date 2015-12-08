@@ -4,8 +4,8 @@ from flask import render_template, redirect, url_for, flash, request, \
 from flask.ext.login import login_required, login_user, logout_user, current_user
 from . import admin
 from .forms import LoginForm, AddUserForm, EditUserForm, ContestSeriesForm, \
-    TeacherForm, ContestForm
-from app.models import User, ContestSeries, Teacher, Contest
+    TeacherForm, ContestForm, AwardsForm
+from app.models import User, ContestSeries, Teacher, Contest, Awards
 
 
 @admin.route('/login', methods=['GET', 'POST'])
@@ -204,10 +204,10 @@ def contest():
     if page == -1:
         page = ((Contest.get_count() - 1) // per_page) + 1
     pagination = Contest.get_list_pageable(page, per_page)
-    series_list = pagination.items
+    contest_list = pagination.items
     return render_template('admin/contest.html',
                            title = u'竞赛管理',
-                           series_list = series_list,
+                           contest_list = contest_list,
                            pagination = pagination)
 
 
@@ -216,12 +216,9 @@ def contest():
 def contest_add():
     contest_form = ContestForm()
     if request.method == 'POST' and contest_form.validate():
-        '''
         ret = Contest.create_contest(contest_form)
         if ret == 'OK':
             return redirect(url_for('admin.contest'))
-        '''
-    print 'view ', contest_form.date_range.data
     return render_template('admin/contest_form.html',
                            title = u'添加竞赛',
                            action = url_for('admin.contest_add'),
@@ -234,7 +231,16 @@ def contest_edit(id):
     contest = Contest.get_by_id(id)
     contest_form = ContestForm()
     if request.method == 'GET':
-        pass
+        contest_form.name_cn.data = contest.name_cn
+        contest_form.name_en.data = contest.name_en
+        contest_form.level.data = contest.level
+        contest_form.series_id.data = contest.series.id
+        contest_form.year.data = contest.year
+        contest_form.date_range.data = [contest.start_date.strftime('%Y/%m/%d'),
+                                        contest.end_date.strftime('%Y/%m/%d')]
+        contest_form.organizer.data = contest.organizer
+        contest_form.co_organizer.data = contest.co_organizer
+        contest_form.place.data = contest.place
     if request.method == 'POST' and contest_form.validate():
         ret = Contest.update_contest(contest, contest_form)
         if ret == 'OK':
@@ -243,3 +249,34 @@ def contest_edit(id):
                            title = u'修改竞赛',
                            action = url_for('admin.contest_edit', id=id),
                            contest_form = contest_form)
+
+
+@admin.route('/contest/<id>/awards', methods=['GET'])
+def awards(id):
+    contest = Contest.get_by_id(id)
+    awards_list = contest.awards.all()
+    return render_template('admin/awards.html',
+                           title = u'奖项管理',
+                           contest = contest,
+                           awards_list = awards_list)
+
+
+@admin.route('/contest/<id>/awards/add', methods=['GET'])
+def awards_add(id):
+    contest = Contest.get_by_id(id)
+    awards_form = AwardsForm()
+    return render_template('admin/awards_form.html',
+                           title = u'奖项录入',
+                           contest = contest,
+                           awards_form = awards_form)
+
+
+@admin.route('/contest/<id>/awards/edit/<awards_id>', methods=['GET'])
+def awards_edit(id, awards_id):
+    contest = Contest.get_by_id(id)
+    awards = Awards.get_by_id(awards_id)
+    awards_form = AwardsForm()
+    return render_template('admin/awards_form.html',
+                           title = u'奖项录入',
+                           contest = contest,
+                           awards_form = awards_form)
