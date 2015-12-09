@@ -5,7 +5,8 @@ from flask.ext.login import login_required, login_user, logout_user, current_use
 from . import admin
 from .forms import LoginForm, AddUserForm, EditUserForm, ContestSeriesForm, \
     TeacherForm, ContestForm, AwardsForm
-from app.models import User, ContestSeries, Teacher, Contest, Awards
+from app.models import User, ContestSeries, Teacher, Contest, Awards, Student, \
+    Resource
 
 
 @admin.route('/login', methods=['GET', 'POST'])
@@ -251,20 +252,30 @@ def contest_edit(id):
                            contest_form = contest_form)
 
 
-@admin.route('/contest/<id>/awards', methods=['GET'])
+@admin.route('/contest/<id>', methods=['GET'])
 def awards(id):
     contest = Contest.get_by_id(id)
-    awards_list = contest.awards.all()
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['ADMIN_AWARDS_PER_PAGE']
+    if page == -1:
+        page = ((Awards.get_count() - 1) // per_page) + 1
+    pagination = Awards.get_list_pageable(page, per_page, contest.contest_id)
+    awards_list = pagination.items
     return render_template('admin/awards.html',
                            title = u'奖项管理',
                            contest = contest,
-                           awards_list = awards_list)
+                           awards_list = awards_list,
+                           pagination = pagination)
 
 
-@admin.route('/contest/<id>/awards/add', methods=['GET'])
+@admin.route('/contest/<id>/awards/add', methods=['GET', 'POST'])
 def awards_add(id):
     contest = Contest.get_by_id(id)
     awards_form = AwardsForm()
+    if request.method == 'POST' and awards_form.validate():
+        ret = Awards.create_awards(awards_form, contest, request.files)
+        if ret == 'OK':
+            pass
     return render_template('admin/awards_form.html',
                            title = u'奖项录入',
                            contest = contest,
@@ -280,3 +291,4 @@ def awards_edit(id, awards_id):
                            title = u'奖项录入',
                            contest = contest,
                            awards_form = awards_form)
+

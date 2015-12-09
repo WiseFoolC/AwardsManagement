@@ -20,3 +20,11 @@ class Student(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+
+def get_by_id(id):
+    return Student.query.filter(Student.id == id).first()
+
+
+def get_all():
+    return Student.query.all()

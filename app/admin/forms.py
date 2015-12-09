@@ -80,13 +80,28 @@ class ContestForm(Form):
 
 
 class AwardsForm(Form):
-    level = SelectField(u'获奖等级', choices=[(v, v) for v in Awards.AwardsLevel.values()])
+    level = SelectField(u'获奖等级', choices=[(v, v) for v in Awards.AwardsLevel])
     title = StringField(u'作品名称', validators=[Optional()])
     type = SelectField(u'奖励类型', choices=[(v, v) for v in Awards.AwardsType.values()])
-    teachers = SelectMultipleField(u'指导教师', validators=[MyDataRequired()])
-    students = SelectMultipleField(u'获奖学生', validators=[MyDataRequired()])
+    teachers = SelectMultipleField(u'指导教师', validators=[MyDataRequired()], coerce=int)
+    students = SelectMultipleField(u'获奖学生', validators=[MyDataRequired()], coerce=int)
 
+    def __init__(self, *args, **kwargs):
+        super(AwardsForm, self).__init__(*args, **kwargs)
+        self.teachers.choices = [(t.id, t.name) for t in Teacher.get_all()]
+        self.students.choices = [(s.id, s.name) for s in Student.get_all()]
 
+    def get_teacher_list(self):
+        teacher_list = []
+        for id in self.teachers.data:
+            t = Teacher.get_by_id(id)
+            teacher_list.append(t)
+        return teacher_list
 
-
+    def get_student_list(self):
+        student_list = []
+        for id in self.students.data:
+            s = Student.get_by_id(id)
+            student_list.append(s)
+        return student_list
 

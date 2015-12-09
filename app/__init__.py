@@ -3,7 +3,7 @@ from flask.ext.login import LoginManager
 from config import config, Constant
 from app.models import db, load_department_config
 from flask.ext.uploads import patch_request_class, configure_uploads
-from app.utils.upload import resource_uploader
+from app.models.Resource import resource_uploader
 
 
 app = Flask(__name__)

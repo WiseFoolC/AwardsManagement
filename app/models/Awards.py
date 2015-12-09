@@ -1,6 +1,6 @@
 # coding=utf-8
 from flask import current_app
-from . import db, Contest
+from . import db, Contest, Resource
 
 
 awards_teacher = db.Table('awards_teacher',
@@ -13,11 +13,11 @@ awards_student = db.Table('awards_student',
     db.Column('student_id', db.Integer, db.ForeignKey('student.id'))
 )
 
-AwardsLevel = {
-    '1' : u'一等奖',
-    '2' : u'二等奖',
-    '3' : u'三等奖'
-}
+AwardsLevel = [
+    u'一等奖',
+    u'二等奖',
+    u'三等奖'
+]
 
 AwardsType = {
     'personal' : u'个人',
@@ -96,27 +96,37 @@ def get_list_by_contest_id(cid):
     return Awards.query.filter(Awards.contest_id == cid).all()
 
 
-def get_count():
-    return Awards.query.count()
+def get_count(contest_id = -1):
+    query = Awards.query
+    if contest_id != -1:
+        query = query.filter(Awards.contest_id == contest_id)
+    return query.count()
 
 
-def get_list_pageable(page, per_page):
-    return Awards.query.order_by(Awards.awards_id)\
+def get_list_pageable(page, per_page, contest_id = -1):
+    query = Awards.query
+    if contest_id != -1:
+        query = query.filter(Awards.contest_id == contest_id)
+    return query.order_by(Awards.awards_id)\
         .paginate(page, per_page, error_out=False)
 
 
-def create_awards(awards_form, contest_id):
+def create_awards(awards_form, contest, files):
     try:
         awards = Awards()
-        contest = Contest.get_by_id(contest_id)
         awards.awards_id = generate_next_awards_id(contest)
         awards.level = awards_form.level.data
         awards.title = awards_form.title.data
         awards.type = awards_form.type.data
         awards.process = awards_form.process.data
         awards.contest = contest
+        awards.teachers = awards_form.get_teacher_list()
+        awards.students = awards_form.get_student_list()
         awards.save()
         current_app.logger.info(u'录入奖项 %s 成功', awards.awards_id)
+        for name, file in files.items(multi=True):
+            Resource.save_res(file, awards)
+        current_app.logger.info(u'上传奖项附件成功')
         return 'OK'
     except Exception, e:
         current_app.logger.error(u'录入奖项 %s 失败', awards_form)

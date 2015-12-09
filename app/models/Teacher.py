@@ -32,6 +32,10 @@ def get_list_by_department(department):
     return Teacher.query.filter(Teacher.department == department).all()
 
 
+def get_all():
+    return Teacher.query.all()
+
+
 def get_count():
     return Teacher.query.count()
 
