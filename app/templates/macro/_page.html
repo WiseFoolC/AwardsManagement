@@ -1,5 +1,5 @@
-{% macro pagination_widget(pagination, endpoint) %}
-  <ul class="pagination no-margin pull-right">
+{% macro pagination_widget(pagination, endpoint, size='') %}
+  <ul class="pagination no-margin pull-right {{ size }}">
     <li {% if not pagination.has_prev %} class="disabled" {% endif %}>
       <a href="{% if pagination.has_prev %}{{ url_for(endpoint, page=pagination.prev_num) }}
         {% else %}#{% endif %}"><i class="fa fa-angle-left"></i></a>
@@ -7,7 +7,7 @@
     {% for p in pagination.iter_pages() %}
       {% if p %}
         {% if p == pagination.page %}
-          <li class="active"><a href="{{ url_for(endpoint, page = p) }}">{{ p }}</a></li>
+          <li class="active"><a href="{{ url_for(endpoint, page = p) }}" onclick="return false;">{{ p }}</a></li>
         {% else %}
           <li><a href="{{ url_for(endpoint, page = p) }}">{{ p }}</a></li>
         {% endif %}

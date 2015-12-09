@@ -1,55 +1,191 @@
 {% extends "admin/base.html" %}
+{% from "macro/_page.html" import pagination_widget %}
 
 {% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/iCheck/square/blue.css') }}"/>
+{% endblock %}
+
+{% block content_header %}
+  <div class="row">
+    <div class="col-sm-12">
+      <ol class="breadcrumb">
+        <li><a href="{{ url_for('admin.contest') }}">竞赛管理</a></li>
+        <li class="active">{{ contest.name_cn }}</li>
+      </ol>
+    </div>
+  </div>
 {% endblock %}
 
 {% block content %}
   <div class="row">
-    <div class="col-md-4">
-      <div class="box box-primary">
-        <div class="box-body box-profile">
-          <h3 class="text-center">2015年ACM-ICPC亚洲区域赛北京站</h3>
-          <p class="text-muted text-center">2015年11月21日 - 2015年11月22日</p>
-          <ul class="list-group list-group-unbordered">
-            <li class="list-group-item">
-              <b>竞赛系列</b> <span class="pull-right">ACM-ICPC</span>
-            </li>
-            <li class="list-group-item">
-              <b>主办</b> <span class="pull-right">北京大学</span>
-            </li>
-            <li class="list-group-item">
-              <b>承办</b> <span class="pull-right"></span>
-            </li>
-          </ul>
-          <a href="#" class="btn btn-primary btn-block"><b>管理奖项</b></a>
+    <div class="col-md-12">
+      <div class="box box-widget widget-user-2">
+        <div class="widget-user-header bg-blue" style="padding: 10px 20px;">
+          <h3>{{ contest.name_cn }}</h3>
+          <p><span class="front"><i class="fa fa-calendar"></i> 竞赛日期 </span>
+            {{ contest.start_date.strftime('%Y年%m月%d日') }} - {{ contest.end_date.strftime('%Y年%m月%d日') }}
+          </p>
+          <p><span class="front"><i class="fa fa-trophy"></i> 竞赛等级 </span>{{ contest.level }}</p>
+          <p><span class="front"><i class="fa fa-bank"></i> 主办方 </span>
+            {{ contest.organizer }} {% if contest.co_organizer %} (承办 {{ contest.co_organizer }}) {% endif %}</p>
+          <p><span class="front"><i class="fa fa-map-o"></i> 地点 </span>{{ contest.place }}</p>
+        </div>
+        <div class="box-body no-padding">
+          <div class="list-box-controls">
+            <a class="btn btn-danger btn-sm to_delete_user" data-toggle="modal" data-target="#delModal">
+              <i class="fa fa-trash-o"></i> 删除</a>
+            <a class="btn btn-primary btn-sm item_edit">
+              <i class="fa fa-pencil-square-o"></i> 修改</a>
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.awards_add', id=contest.id) }}">
+              <i class="fa fa-plus"></i> 添加</a>
+
+            <div class="pull-right">
+              {{ pagination_widget(pagination, '.awards', 'pagination-sm') }}
+            </div>
+          </div>
+          <table class="table table-bordered awards-table">
+            <thead><tr>
+              <th class="col-check">选择</th>
+              <th>奖项编号</th>
+              <th>获奖等级</th>
+              <th>获奖学生</th>
+              <th>指导教师</th>
+              <th>审核状态</th>
+            </tr></thead>
+            <tbody>
+            {% if awards_list %}
+            {% for awards in awards_list %}
+              <tr>
+                <td><label><input type="radio" name="awards" value="{{ awards.id }}"></label></td>
+                <td>{{ awards.awards_id }}</td>
+                <td>{{ awards.level }}</td>
+                <td>{% for student in awards.students %}
+                  {{ student.name }}
+                {% endfor %}</td>
+                <td>{% for teacher in awards.teachers %}
+                  {{ teacher.name }}
+                {% endfor %}</td>
+                <td>
+                  {% if awards.process == '正式定档' %}
+                    <label class="label bg-green">{{ awards.result }}</label>
+                  {% else %}
+                    <label class="label bg-red">{{ awards.process }}</label>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            {% else %}
+              <tr><td colspan="6"><h2>无数据</h2></td></tr>
+            {% endif %}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-12" style="display: none">
       <div class="box box-primary">
-        <div class="box-body box-profile">
-          <h3 class="text-center">2014年ACM-ICPC亚洲区域赛西安站</h3>
-
-          <p class="text-muted text-center">2014年10月21日 - 2014年10月22日</p>
-
-          <ul class="list-group list-group-unbordered">
-            <li class="list-group-item">
-              <b>竞赛系列</b> <span class="pull-right">ACM-ICPC</span>
-            </li>
-            <li class="list-group-item">
-              <b>主办</b> <span class="pull-right">西北工业大学</span>
-            </li>
-            <li class="list-group-item">
-              <b>承办</b> <span class="pull-right"></span>
-            </li>
-          </ul>
-          <a href="#" class="btn btn-primary btn-block"><b>管理奖项</b></a>
+        <div class="box-header with-border">
+          <h3 class="box-title">奖项录入</h3>
         </div>
+        <form method="post" class="form-horizontal">
+          <div class="box-body">
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">作品名称</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputPassword3" placeholder="作品名称">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">获奖等级</label>
+              <div class="col-sm-10">
+                <select class="form-control">
+                  <option>全国一等奖</option>
+                  <option>全国二等奖</option>
+                  <option>全国三等奖</option>
+                  <option>省级一等奖</option>
+                  <option>省级二等奖</option>
+                  <option>省级三等奖</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">获奖类型</label>
+
+              <div class="col-sm-10">
+                <label class="radio-inline">
+                  <input type="radio" id="inlineCheckbox1" value="1" name="awards_type"> 个人
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" id="inlineCheckbox2" value="2" name="awards_type"> 团体
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">获奖学生</label>
+
+              <div class="col-sm-10">
+                <select class="form-control">
+                  <option>学生1</option>
+                  <option>学生2</option>
+                  <option>学生3</option>
+
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">指导教师</label>
+
+              <div class="col-sm-10">
+                <select class="form-control">
+                  <option>老师1</option>
+                  <option>老师2</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">上传附件</label>
+
+              <div class="col-sm-10">
+                <input type="file" id="exampleInputFile">
+              </div>
+            </div>
+
+          </div>
+          <!-- /.box-body -->
+          <div class="box-footer text-center">
+            <button type="submit" class="btn btn-primary">提交</button>
+          </div>
+          <!-- /.box-footer -->
+        </form>
       </div>
     </div>
   </div>
 {% endblock %}
 
 {% block script %}
-
+  <script src="{{ url_for('static', filename='plugins/iCheck/icheck.min.js') }}"></script>
+  <script>
+    function make_iCheck() {
+      $('.table input[type="checkbox"], .table input[type="radio"]').iCheck({
+        checkboxClass: 'icheckbox_square-blue',
+        radioClass: 'iradio_square-blue'
+      });
+    }
+    $(document).ready(function () {
+      make_iCheck();
+      $('.item_edit').on('click', function () {
+        var $check = $('input[name="awards"]:checked');
+        if ($check.length <= 0) {
+          return false;
+        }
+        var url = "{{ url_for('admin.awards_edit', id=contest.id, awards_id='') }}";
+        var id = $check.val();
+        window.location.href = url + id;
+      });
+    });
+  </script>
 {% endblock %}

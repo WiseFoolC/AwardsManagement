@@ -8,7 +8,7 @@
       <div class="col-sm-9">
         {{ field(class="form-control", id=id, **kwargs) | safe }}
         {% if field.errors %}
-          <small class="help-block" data-bv-for={{ kwargs['id'] }}>
+          <small class="help-block" data-bv-for={{ id }}>
             {% for error in field.errors %}
               {{ error }}<br>
             {% endfor %}
@@ -39,6 +39,29 @@
             {% endfor %}
           </small>
         {% endif %}
+      </div>
+    </div>
+{% endmacro %}
+
+{% macro render_select_field(field, id, link, btn) %}
+  {% if field.errors %}
+    <div class="form-group has-error has-feedback">
+  {% else %}
+    <div class="form-group has-feedback">
+  {% endif %}
+      {{ field.label(for=id, class="col-sm-2 control-label") }}
+      <div class="col-sm-6">
+        {{ field(class="form-control", id=id, **kwargs) | safe }}
+        {% if field.errors %}
+          <small class="help-block" data-bv-for={{ id }}>
+            {% for error in field.errors %}
+              {{ error }}<br>
+            {% endfor %}
+          </small>
+        {% endif %}
+      </div>
+      <div class="col-sm-3">
+        <a class="btn btn-primary btn-block btn-sm" href="{{ url_for(link) }}" target="_blank">{{ btn }}</a>
       </div>
     </div>
 {% endmacro %}
