@@ -1,6 +1,7 @@
 # coding=utf-8
+import traceback
 from flask import current_app
-from . import db, ContestSeries
+from . import db, ContestSeries, Resource
 from datetime import date
 
 ContestLevel = {
@@ -11,7 +12,8 @@ ContestLevel = {
 
 class Contest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    contest_id = db.Column(db.String(128), unique=True, nullable=False)
+    contest_id = db.Column(db.String(128), unique=True,
+                           nullable=False, index=True)
     name_cn = db.Column(db.Unicode(512))
     name_en = db.Column(db.String(512))
     level = db.Column(db.Unicode())
@@ -40,7 +42,7 @@ class Contest(db.Model):
         db.session.commit()
 
     def remove(self):
-        db.session.remove(self)
+        db.session.delete(self)
         db.session.commit()
 
 
@@ -87,9 +89,9 @@ def create_contest(contest_form):
         contest.save()
         current_app.logger.info(u'录入竞赛 %s 成功', contest.name_cn)
         return 'OK'
-    except Exception, e:
+    except Exception:
         current_app.logger.error(u'录入竞赛 %s 失败', contest_form.name_cn.data)
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'
 
 
@@ -108,8 +110,21 @@ def update_contest(contest, contest_form):
         contest.save()
         current_app.logger.info(u'更新竞赛 %s 成功', contest.name_cn)
         return 'OK'
-    except Exception, e:
+    except Exception:
         current_app.logger.error(u'更新竞赛 %s 失败', contest_form.name_cn.data)
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'
 
+
+def delete_contest(contest):
+    try:
+        for awards in contest.awards.all():
+            for res in awards.resources.all():
+                Resource.delete_res(res)
+        contest.remove()
+        current_app.logger.info(u'删除竞赛成功')
+        return 'OK'
+    except Exception:
+        current_app.logger.error(u'删除竞赛失败')
+        current_app.logger.error(traceback.format_exc())
+        return 'FAIL'

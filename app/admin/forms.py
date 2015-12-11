@@ -1,7 +1,7 @@
 # coding=utf-8
 from flask.ext.wtf import Form
-from wtforms import Field, StringField, PasswordField, BooleanField, \
-    SubmitField, SelectField, RadioField, SelectMultipleField
+from wtforms import Field, StringField, PasswordField, BooleanField, SubmitField, \
+    SelectField, RadioField, SelectMultipleField, FileField
 from wtforms.validators import Length, Optional
 from ..utils.validators import MyDataRequired
 from wtforms.widgets import TextInput
@@ -68,7 +68,7 @@ class ContestForm(Form):
     date_range = DateRangeField(u'起止日期', validators=[MyDataRequired()],
                                 default=[date.today().strftime('%Y/%m/%d'), date.today().strftime('%Y/%m/%d')])
     place = StringField(u'地点', validators=[MyDataRequired()])
-    series_id = SelectField(u'所属竞赛系列', coerce=int)
+    series_id = SelectField(u'所属竞赛系列', coerce=int, validators=[MyDataRequired()])
 
 
     def __init__(self, *args, **kwargs):
@@ -82,21 +82,19 @@ class ContestForm(Form):
 class AwardsForm(Form):
     level = SelectField(u'获奖等级', choices=[(v, v) for v in Awards.AwardsLevel])
     title = StringField(u'作品名称', validators=[Optional()])
-    type = SelectField(u'奖励类型', choices=[(v, v) for v in Awards.AwardsType.values()])
+    type = SelectField(u'奖励类型', choices=[(v, v) for v in Awards.AwardsType])
     teachers = SelectMultipleField(u'指导教师', validators=[MyDataRequired()], coerce=int)
     students = SelectMultipleField(u'获奖学生', validators=[MyDataRequired()], coerce=int)
 
     def __init__(self, *args, **kwargs):
         super(AwardsForm, self).__init__(*args, **kwargs)
         self.teachers.choices = [(t.id, t.name) for t in Teacher.get_all()]
-        self.students.choices = [(s.id, s.name) for s in Student.get_all()]
+        self.students.choices = [(s.id, s.stu_no + ' ' + s.name) for s in Student.get_all()]
 
     def get_teacher_list(self):
-        teacher_list = []
-        for id in self.teachers.data:
-            t = Teacher.get_by_id(id)
-            teacher_list.append(t)
-        return teacher_list
+        id = self.teachers.data
+        t = Teacher.get_by_id(id)
+        return [t]
 
     def get_student_list(self):
         student_list = []
@@ -105,3 +103,16 @@ class AwardsForm(Form):
             student_list.append(s)
         return student_list
 
+
+class StudentForm(Form):
+    stu_no = StringField(u'学号', validators=[MyDataRequired()])
+    name = StringField(u'姓名', validators=[MyDataRequired()])
+    department = SelectField(u'学院', validators=[MyDataRequired()],
+                             choices=[(department, department) for department in DepartmentList])
+    major = StringField(u'专业')
+    grade = SelectField(u'年级')
+
+    def __init__(self, *args, **kwargs):
+        super(StudentForm, self).__init__(*args, **kwargs)
+        cur_year = date.today().year
+        self.grade.choices = [(str(y), str(y)) for y in range(cur_year, cur_year - 10, -1)]

@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 {% from "macro/_form_horizontal.html" import render_form_field, render_radio_field %}
+{% from "macro/_flash_alert.html" import render_flash_alert %}
 
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/admin.css') }}">
@@ -33,6 +34,14 @@
             {% endif %}
             {{ render_form_field(user_form.department, id='inputDepartment') }}
             {{ render_radio_field(user_form.permission) }}
+
+            <div class="row">
+              <div class="col-sm-offset-2 col-sm-9">
+                {%- with messages = get_flashed_messages() -%}
+                  {{ render_flash_alert(messages) }}
+                {% endwith %}
+              </div>
+            </div>
           </div>
           <!-- /.box-body -->
           <div class="box-footer clearfix text-center">

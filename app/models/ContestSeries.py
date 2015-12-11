@@ -1,6 +1,7 @@
 # coding=utf-8
+import traceback
 from flask import current_app
-from . import db
+from . import db, Resource
 
 
 class ContestSeries(db.Model):
@@ -15,7 +16,7 @@ class ContestSeries(db.Model):
         db.session.commit()
 
     def remove(self):
-        db.session.remove(self)
+        db.session.delete(self)
         db.session.commit()
 
 
@@ -66,4 +67,18 @@ def update_series(series, series_form):
     except Exception, e:
         current_app.logger.error(u'更新竞赛系列 %s 失败', series_form.username.data)
         current_app.logger.error(e)
+        return 'FAIL'
+
+
+def delete_series(series):
+    try:
+        for contest in series.contests.all():
+            for awards in contest.awards.all():
+                for res in awards.resources.all():
+                    Resource.delete_res(res)
+        series.remove()
+        current_app.logger.info(u'删除竞赛系列成功')
+        return 'OK'
+    except Exception:
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'

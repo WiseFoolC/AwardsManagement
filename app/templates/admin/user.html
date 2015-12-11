@@ -10,13 +10,22 @@
 {% block content %}
   <div class="row">
     <div class="col-sm-12">
+      <div class="alert alert-danger alert-dismissible" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h4><i class="icon fa fa-ban"></i> 错误</h4>
+        <p id="alert-msg"></p>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
       <div class="box box-primary">
         <div class="box-header with-border">
           <h3 class="box-title"><i class="fa fa-users"></i> 用户管理</h3>
         </div>
         <div class="box-body no-padding">
           <div class="list-box-controls">
-            <a class="btn btn-danger btn-sm to_delete_user" data-toggle="modal" data-target="#myModal">
+            <a class="btn btn-danger btn-sm to_delete_item" data-toggle="modal" data-target="#delModal">
               <i class="fa fa-trash-o"></i> 删除</a>
             <a class="btn btn-primary btn-sm item_edit"><i class="fa fa-pencil-square-o"></i> 修改</a>
             <a class="btn btn-primary btn-sm" href="{{ url_for('admin.user_add') }}"><i class="fa fa-plus"></i>
@@ -25,11 +34,11 @@
           <table class="table table-bordered table-striped" style="text-align: center">
             <thead><tr>
               <th class="col-check">选择</th>
-              <th class="col-name">姓名</th><th>部门</th><th>权限</th>
+              <th class="col-name">用户名</th><th>部门</th><th>权限</th>
             </tr></thead>
             <tbody>
             {% for user in user_list %}
-              <tr>
+              <tr id="user{{ user.id }}">
               <td class="col-check">
                 <label><input type="radio" name="user" value="{{ user.id }}"></label>
               </td>
@@ -45,12 +54,33 @@
         </div>
         <!-- /.box-body -->
         <div class="box-footer clearfix">
-          {{ pagination_widget(pagination, '.user') }}
+          <div class="pull-right">
+            {{ pagination_widget(pagination, '.user') }}
+          </div>
         </div>
       </div>
     </div>
-
   </div>
+
+<div class="modal fade" id="delModal" tabindex="-1"
+     role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title text-center" id="myModalLabel">警告</h4>
+      </div>
+      <div class="modal-body">
+        <h4>确定删除选定用户</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-danger del-item">确认</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block script %}
@@ -73,6 +103,30 @@
         var id = $check.val();
         window.location.href = url + id;
       });
+
+      $('.to_delete_item').on('click', function() {
+        var $check = $('input[name="user"]:checked');
+        if ($check.length <= 0) {
+          return false;
+        }
+        var id = $check.val();
+        $('.del-item').data('user', id);
+      });
+      $('.del-item').on('click', function() {
+        var url = "{{ url_for('admin.user_del') }}";
+        var id = $(this).data('user');
+        var data = { 'user_id' : id };
+        $('#delModal').modal('hide');
+        $.post(url, data, function(response) {
+          if (response.ret == 'OK') {
+            $('#user' + id).fadeOut(1200, function(){ $(this).remove(); });
+          } else {
+            $('#alert-msg').html(response.ret);
+            $('.alert-danger').fadeIn();
+          }
+        });
+      });
+
     });
   </script>
 {% endblock %}

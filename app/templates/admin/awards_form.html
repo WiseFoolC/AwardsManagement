@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 {% from "macro/_form_horizontal.html" import render_form_field, render_select_field %}
+{% from "macro/_flash_alert.html" import render_flash_alert %}
 
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='plugins/select2/select2.min.css') }}">
@@ -26,20 +27,52 @@
         <div class="box-header with-border">
           <h3 class="box-title"><i class="fa fa-flag"></i> {{ title }}</h3>
         </div>
-        <form action="{{ action }}" method="post" class="form-horizontal">
+        <form action="{{ action }}" method="post"
+              enctype="multipart/form-data" class="form-horizontal">
           <div class="box-body">
             {{ awards_form.hidden_tag() }}
             {{ render_form_field(awards_form.title, id='inputTitle') }}
             {{ render_form_field(awards_form.level, id='inputLevel') }}
             {{ render_form_field(awards_form.type, id='inputType') }}
-            {{ render_select_field(awards_form.teachers, id='inputTeachers', link='admin.teacher_add', btn='添加教师') }}
-            {{ render_select_field(awards_form.students, id='inputStudents', link='admin.user_add', btn='添加学生') }}
+            {{ render_select_field(awards_form.teachers, id='inputTeachers') }}
+            {{ render_select_field(awards_form.students, id='inputStudents') }}
             <div class="form-group">
               <label class="control-label col-sm-2" for="inputFile">相关图片</label>
+
               <div class="col-sm-9">
-                <input id="inputFile" name="files[]" type="file" multiple>
+                <input id="inputFile" name="files" type="file" multiple>
               </div>
             </div>
+
+            {% if exist_resources %}
+              <div class="form-group">
+                <label class="control-label col-sm-2">已上传图片</label>
+                <div class="col-sm-10" id="exist_res_wall">
+                  {% for res in exist_resources %}
+                    <div class="col-sm-4 col-md-3 exist_res" id="resource{{ res.id }}">
+                      <div class="img-box">
+                        <img src="{{ res.url }}">
+                        <div class="opt-btn">
+                          <a class="label label-danger to-del-res" data-res="{{ res.id }}"
+                             data-toggle="modal" data-target="#delRes">
+                            <i class="fa fa-times"></i>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <div class="row">
+              <div class="col-sm-offset-2 col-sm-9">
+                {%- with messages = get_flashed_messages() -%}
+                  {{ render_flash_alert(messages) }}
+                {% endwith %}
+              </div>
+            </div>
+
           </div>
           <div class="box-footer text-center">
             <button type="submit" class="btn btn-primary">提交</button>
@@ -49,48 +82,76 @@
     </div>
   </div>
   <!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
-      </div>
-      <div class="modal-body">
-        ...
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+  <div class="modal fade" id="delRes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">警告</h4>
+        </div>
+        <div class="modal-body">
+          <h4>是否确定删除此图片</h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-danger del-res">确定</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('static', filename='plugins/select2/select2.min.js') }}"></script>
-<script src="{{ url_for('static', filename='plugins/select2/i18n/zh-CN.js') }}"></script>
-<script src="{{ url_for('static', filename='plugins/bootstrap-fileinput/js/fileinput.min.js') }}"></script>
-<script src="{{ url_for('static', filename='plugins/bootstrap-fileinput/js/fileinput_locale_zh.js') }}"></script>
-<script>
-  $(document).ready(function() {
-    $('#inputTeachers, #inputStudents').select2({
-      theme: "bootstrap",
-      language: "zh-CN",
-      tags: true,
-      tokenSeparators: [','],
-      width: '100%'
-    });
+  <script src="{{ url_for('static', filename='plugins/select2/select2.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/select2/i18n/zh-CN.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/bootstrap-fileinput/js/fileinput.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/bootstrap-fileinput/js/fileinput_locale_zh.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/masonry/masonry.pkgd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
+  <script>
+    $(document).ready(function () {
+      $('#inputTeachers, #inputStudents').select2({
+        theme: "bootstrap",
+        language: "zh-CN",
+        tags: true,
+        tokenSeparators: [','],
+        width: '100%'
+      });
 
-    $('#inputFile').fileinput({
-      language: 'zh',
-      showUpload: false,
-      allowedFileTypes: [ 'image' ],
-      maxFileSize : 4192
+      $('#inputFile').fileinput({
+        language: 'zh',
+        showUpload: false,
+        enctype: 'multipart/form-data',
+        allowedFileTypes: ['image'],
+        maxFileSize: 4192
+      });
+
+      var $res_wall = $('#exist_res_wall');
+      $res_wall.imagesLoaded().done(function(instance) {
+        $res_wall.masonry({
+          itemSelector: '.exist_res',
+          isAnimated: true
+        });
+      });
+
+      $('.to-del-res').on('click', function() {
+        $('.del-res').data('res', $(this).data('res'));
+      });
+      $('.del-res').on('click', function() {
+        var url = '{{ url_for('admin.resource_del') }}';
+        var res_id = $(this).data('res');
+        var data = { 'res_id': res_id };
+        $('#delRes').modal('hide');
+
+        $.post(url, data, function(response) {
+          if (response.ret == 'OK') {
+            var $items = $('#resource' + res_id);
+            $res_wall.masonry().masonry('remove', $items).masonry('layout');
+          }
+        });
+      });
     });
-  });
-</script>
+  </script>
 {% endblock %}

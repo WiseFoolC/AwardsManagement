@@ -7,11 +7,21 @@
 
 {% block content %}
   <div class="row">
+    <div class="col-sm-12">
+      <div class="alert alert-danger alert-dismissible" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h4><i class="icon fa fa-ban"></i> 错误</h4>
+        <p id="alert-msg"></p>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-md-12">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title"><i class="fa fa-flag"></i> 竞赛管理</h3>
+          <h3 class="box-title"><i class="fa fa-trophy"></i> 竞赛管理</h3>
         </div>
+        {% if contest_list %}
         <div class="box-body no-padding">
           <div class="list-box-controls">
             <a class="btn btn-danger btn-sm to_delete_item" data-toggle="modal" data-target="#delModal">
@@ -24,12 +34,20 @@
             </div>
           </div>
         </div>
+        {% endif %}
       </div>
     </div>
   </div>
+  {% if not contest_list %}
+    <div class="row">
+    <div class="col-md-12 text-center">
+      <h2>无数据</h2>
+    </div>
+    </div>
+  {% else %}
   <div class="row contest-container">
   {% for contest in contest_list %}
-    <div class="col-md-4 contest-box">
+    <div class="col-md-4 contest-box" id="contest{{ contest.id }}">
       <div class="box box-primary">
         <div class="box-body box-profile">
           <h3 class="text-center">{{ contest.name_cn }}</h3>
@@ -43,13 +61,10 @@
             <tr><td>竞赛等级</td> <td>{{ contest.level }}</td></tr>
             <tr><td>主办方</td> <td>{{ contest.organizer }}</td></tr>
           </table>
-
         </div>
         <div class="box-footer">
           <div class="col-xs-9">
             <div class="btn-group btn-group-justified">
-              <a class="btn btn-default btn-sm btn-flat" data-contest="{{ contest.id }}"
-                 data-toggle="modal" data-target="#detailModal">详细信息</a>
               <a href="{{ url_for('admin.awards', id=contest.id) }}"
                  class="btn btn-primary btn-sm btn-flat"><b>管理奖项</b></a>
             </div>
@@ -64,6 +79,7 @@
     </div>
   {% endfor %}
   </div>
+  {% endif %}
 <div class="modal fade" id="delModal" tabindex="-1"
      role="dialog" aria-labelledby="mySmallModalLabel">
   <div class="modal-dialog modal-sm">
@@ -78,26 +94,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-danger">确认</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="detailModal" tabindex="-1"
-     role="dialog" >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title text-center" id="myModalLabel">详细信息</h4>
-      </div>
-      <div class="modal-body">
-        <h4>TODO</h4>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-danger">确认</button>
+        <button type="button" class="btn btn-danger del-item">确认</button>
       </div>
     </div>
   </div>
@@ -116,7 +113,8 @@
     }
     function make_masonry() {
       $('.contest-container').masonry({
-        itemSelector: '.contest-box'
+        itemSelector: '.contest-box',
+        isAnimated: true
       });
     }
     $(document).ready(function() {
@@ -131,6 +129,32 @@
         var id = $check.val();
         window.location.href = url + id;
       });
+
+      var $container = $('.contest-container');
+      $('.to_delete_item').on('click', function() {
+        var $check = $('input[name="contest"]:checked');
+        if ($check.length <= 0) {
+          return false;
+        }
+        var id = $check.val();
+        $('.del-item').data('contest', id);
+      });
+      $('.del-item').on('click', function() {
+        var url = "{{ url_for('admin.contest_del') }}";
+        var id = $(this).data('contest');
+        var data = { 'contest_id' : id };
+        $('#delModal').modal('hide');
+        $.post(url, data, function(response) {
+          if (response.ret == 'OK') {
+            var $items = $('#contest' + id);
+            $container.masonry().masonry('remove', $items).masonry('layout');
+          } else {
+            $('#alert-msg').html(response.ret);
+            $('.alert-danger').fadeIn();
+          }
+        });
+      });
+
     });
   </script>
 {% endblock %}

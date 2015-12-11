@@ -1,0 +1,158 @@
+{% extends "admin/base.html" %}
+{% from "macro/_page.html" import pagination_widget %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/iCheck/square/blue.css') }}"/>
+{% endblock %}
+
+{% block content_header %}
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="alert alert-danger alert-dismissible" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h4><i class="icon fa fa-ban"></i> 错误</h4>
+        <p id="alert-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title"><i class="fa fa-trophy"></i> {{ current_user.permission }}</h3>
+        </div>
+        {% if awards_list %}
+        <div class="box-body no-padding">
+          <div class="list-box-controls">
+            <div class="pull-right">
+              {{ pagination_widget(pagination, '.apply', size='pagination-sm') }}
+            </div>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% if not awards_list %}
+    <div class="row">
+    <div class="col-md-12 text-center">
+      <h2>无数据</h2>
+    </div>
+    </div>
+  {% else %}
+  <div class="row apply-wall">
+    {% for awards in awards_list %}
+    <div class="apply-box col-xs-12 col-sm-12 col-md-6 col-lg-4" id="apply{{ awards.id }}">
+      <div class="box box-primary">
+        <div class="box-body box-profile">
+          <h2 class="text-center">{{ awards.awards_id }}</h2>
+          <table class="profile-table table table-condensed">
+            <tr><td>竞赛名</td> <td>{{ awards.contest.name_cn }}</td></tr>
+            <tr><td>获奖等级</td> <td>{{ awards.contest.level }}{{ awards.level }}</td></tr>
+            <tr>
+              <td>获奖学生</td>
+              <td>{% for student in awards.students %} {{ student.name }}{% endfor %}</td>
+            </tr>
+            <tr>
+              <td>指导教师</td>
+              <td>{% for teacher in awards.teachers %} {{ teacher.name }}{% endfor %}</td>
+            </tr>
+          </table>
+        </div>
+        <div class="box-footer">
+          <div class="col-xs-12 text-center">
+            {% if current_user.level == 2 %}
+            <a href="" class="btn bg-blue btn-sm to_pass" data-apply="{{ awards.id }}" data-opt="1"
+                 data-toggle="modal" data-target="#applyModal"><b>通过审核</b></a>
+            {% elif current_user.level == 3 %}
+              <label style="margin-right: 15px;">
+                <select class="form-control selectResult">
+                  {% for result in awards_result %}
+                  <option value="{{ loop.index0 }}">{{ result }}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <a href="" class="btn bg-blue btn-sm to_pass" data-apply="{{ awards.id }}" data-opt="2"
+                 data-toggle="modal" data-target="#applyModal"><b>确定档次</b></a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Modal -->
+  <div class="modal fade" id="applyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">警告</h4>
+        </div>
+        <div class="modal-body">
+          <h4>是否确定通过此奖项的审核</h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn bg-blue confirm_pass">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+  <script src="{{ url_for('static', filename='plugins/masonry/masonry.pkgd.min.js') }}"></script>
+  <script>
+    function make_masonry(container, item) {
+      container.masonry({
+        itemSelector: item,
+        isAnimated: true
+      });
+    }
+    $(document).ready(function () {
+      var $container = $('.apply-wall');
+      var item = '.apply-box';
+      make_masonry($container, item);
+
+      $('.to_pass').on('click', function() {
+        $('.confirm_pass').data('apply', $(this).data('apply'))
+                .data('opt', $(this).data('opt'));
+      });
+
+      $('.confirm_pass').on('click', function() {
+        $('#applyModal').modal('hide');
+        var apply_id = $(this).data('apply');
+        var $apply_box = $('#apply' + apply_id);
+        var opt = $(this).data('opt');
+        var url = '{{ url_for('admin.pass_apply') }}';
+        var data = { 'apply_id': apply_id, 'opt': opt };
+        var result = null;
+        if (opt == 2) {
+          result = $apply_box.find('.selectResult').first().val();
+          data['result'] = result;
+        }
+        $.post(url, data,
+                function(response) {
+                  if (response.ret == 'OK') {
+                    $container.masonry().masonry('remove', $apply_box).masonry('layout');
+                  } else {
+                    $('#alert-msg').html(response.ret);
+                    $('.alert-danger').fadeIn();
+                  }
+                });
+      });
+
+    });
+  </script>
+{% endblock %}

@@ -1,10 +1,10 @@
 # coding=utf-8
+import os, traceback
 from flask import current_app
 from flask.ext.uploads import UploadSet, DEFAULTS, ARCHIVES, UploadNotAllowed
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from . import db
-import os
 
 
 resource_uploader = UploadSet('resource', DEFAULTS + ARCHIVES,
@@ -37,13 +37,28 @@ class Resource(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    @property
+    def url(self):
+        return resource_uploader.url(self.filename)
+
+    @property
+    def size(self):
+        return os.path.getsize(resource_uploader.path(self.filename))
+
+
+def get_by_id(id):
+    return Resource.query.filter(Resource.id == id).first()
+
 
 def generate_filename(awards):
-    last_awards = awards.resource.order_by(Resource.filename.desc()).first()
+    last_awards = awards.resources.order_by(Resource.filename.desc()).first()
     if last_awards is None:
         return '0001.'
     else:
-        return str(int(last_awards.filename) + 1).rjust(4, '0') + '.'
+        last_awards_dir = last_awards.filename.split('/')
+        filename = last_awards_dir[1].split('.')[0]
+        new_filename = str(int(filename) + 1).rjust(4, '0') + '.'
+        return new_filename
 
 
 def save_res(storage, awards):
@@ -67,26 +82,21 @@ def save_res(storage, awards):
         return u'文件名已存在'
     except Exception, e:
         current_app.logger.error(u'创建文件失败')
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'
 
 
 def delete_res(res):
     try:
-        os.remove(resource_uploader.path(res.filename))
+        file_path = resource_uploader.path(res.filename)
+        dir = os.path.split(file_path)[0]
+        os.remove(file_path)
+        if os.path.isdir(dir) and os.listdir(dir) == []:
+            os.rmdir(dir)
         res.delete()
         current_app.logger.error(u'删除文件成功')
         return 'OK'
     except Exception, e:
         current_app.logger.error(u'删除文件失败')
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'
-    pass
-
-
-def get_url(res):
-    return resource_uploader.path(res.filename)
-
-
-def get_size(res):
-    return os.path.getsize(resource_uploader.path(res.filename))

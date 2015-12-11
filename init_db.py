@@ -2,8 +2,8 @@
 from flask import Flask
 from config import config
 from app.models import db
-from app.models import ContestSeries, Contest, Awards, \
-    Student, Teacher, User, Resource
+from app.models import User, ContestSeries, Contest, Awards, \
+    Student, Teacher, Resource
 
 if __name__ == "__main__":
     app = Flask(__name__)
@@ -13,13 +13,7 @@ if __name__ == "__main__":
         db.drop_all()
         db.create_all()
         user = User.User(u'admin')
-        user.password = '123456'
+        user.password = 'admin2015'
         user.department = u'教务处'
         user.permission = User.Permission.DEAN
         user.save()
-        '''
-        for i in range(10):
-            u = User.User(u'user' + unicode(i))
-            u.password = '123456'
-            u.save()
-        '''

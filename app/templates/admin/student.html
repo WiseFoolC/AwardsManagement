@@ -21,32 +21,35 @@
     <div class="col-sm-12">
       <div class="box box-primary">
         <div class="box-header with-border">
-          <h3 class="box-title"><i class="fa fa-graduation-cap"></i> 教师管理</h3>
+          <h3 class="box-title"><i class="fa fa-bicycle"></i> 学生管理</h3>
         </div>
         <div class="box-body no-padding">
           <div class="list-box-controls">
             <a class="btn btn-danger btn-sm to_delete_item" data-toggle="modal" data-target="#delModal">
               <i class="fa fa-trash-o"></i> 删除</a>
             <a class="btn btn-primary btn-sm item_edit"><i class="fa fa-pencil-square-o"></i> 修改</a>
-            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.teacher_add') }}"><i class="fa fa-plus"></i>
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.student_add') }}"><i class="fa fa-plus"></i>
               添加</a>
           </div>
           <table class="table table-bordered table-striped" style="text-align: center">
             <thead><tr>
-              <th class="col-check">选择</th>
-              <th class="col-name">姓名</th><th>学院部门</th>
+              <th class="col-check">选择</th><th>学号</th>
+              <th class="col-name">姓名</th><th>院系</th>
+              <th>班级</th>
             </tr></thead>
             <tbody>
-            {% if not teacher_list %}
-              <tr><td colspan="3"><h2>无数据</h2></td></tr>
+            {% if not student_list %}
+              <tr><td colspan="5"><h2>无数据</h2></td></tr>
             {% else %}
-            {% for teacher in teacher_list %}
-              <tr id="teacher{{ teacher.id }}">
+            {% for student in student_list %}
+              <tr id="student{{ student.id }}">
               <td class="col-check">
-                <label><input type="radio" name="teacher" value="{{ teacher.id }}"></label>
+                <label><input type="radio" name="student" value="{{ student.id }}"></label>
               </td>
-              <td class="col-name">{{ teacher.name }}</td>
-              <td>{{ teacher.department if teacher.department else '' }}</td>
+              <td>{{ student.stu_no }}</td>
+              <td class="col-name">{{ student.name }}</td>
+              <td>{{ student.department if student.department else '' }}</td>
+              <td>{{ student.major }}{{ student.grade }}级</td>
               </tr>
             {% endfor %}
             {% endif %}
@@ -56,7 +59,7 @@
         <!-- /.box-body -->
         <div class="box-footer clearfix">
           <div class="pull-right">
-            {{ pagination_widget(pagination, '.teacher') }}
+            {{ pagination_widget(pagination, '.student') }}
           </div>
         </div>
       </div>
@@ -74,7 +77,7 @@
         <h4 class="modal-title text-center" id="myModalLabel">警告</h4>
       </div>
       <div class="modal-body">
-        <h4>确定删除选定教师</h4>
+        <h4>确定删除选定学生</h4>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
@@ -97,31 +100,31 @@
     $(document).ready(function() {
       make_iCheck();
       $('.item_edit').on('click', function() {
-        var $check = $('input[name="teacher"]:checked');
+        var $check = $('input[name="student"]:checked');
         if ($check.length <= 0) {
           return false;
         }
-        var url = "{{ url_for('admin.teacher_edit', id='') }}";
+        var url = "{{ url_for('admin.student_edit', id='') }}";
         var id = $check.val();
         window.location.href = url + id;
       });
 
       $('.to_delete_item').on('click', function() {
-        var $check = $('input[name="teacher"]:checked');
+        var $check = $('input[name="student"]:checked');
         if ($check.length <= 0) {
           return false;
         }
         var id = $check.val();
-        $('.del-item').data('teacher', id);
+        $('.del-item').data('student', id);
       });
       $('.del-item').on('click', function() {
-        var url = "{{ url_for('admin.teacher_del') }}";
-        var id = $(this).data('teacher');
-        var data = { 'teacher_id' : id };
+        var url = "{{ url_for('admin.student_del') }}";
+        var id = $(this).data('student');
+        var data = { 'student_id' : id };
         $('#delModal').modal('hide');
         $.post(url, data, function(response) {
           if (response.ret == 'OK') {
-            $('#teacher' + id).fadeOut(1200, function(){ $(this).remove(); });
+            $('#student' + id).fadeOut(1200, function(){ $(this).remove(); });
           } else {
             $('#alert-msg').html(response.ret);
             $('.alert-danger').fadeIn();

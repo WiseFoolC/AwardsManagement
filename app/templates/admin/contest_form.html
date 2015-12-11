@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 {% from "macro/_form_horizontal.html" import render_form_field %}
+{% from "macro/_flash_alert.html" import render_flash_alert %}
 
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='plugins/daterangepicker/daterangepicker-bs3.css') }}">
@@ -18,7 +19,6 @@
 
 {% block content %}
   <div class="row">
-
     <div class="col-md-12">
       <div class="box box-primary">
         <div class="box-header">
@@ -36,6 +36,14 @@
             {{ render_form_field(contest_form.organizer, id='inputOrganizer') }}
             {{ render_form_field(contest_form.co_organizer, id='inputCoOrganizer') }}
             {{ render_form_field(contest_form.place, id='inputPlace') }}
+
+            <div class="row">
+              <div class="col-sm-offset-2 col-sm-9">
+                {%- with messages = get_flashed_messages() -%}
+                  {{ render_flash_alert(messages) }}
+                {% endwith %}
+              </div>
+            </div>
           </div>
           <!-- /.box-body -->
           <div class="box-footer text-center">

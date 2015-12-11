@@ -32,7 +32,7 @@
         </div>
         <div class="box-body no-padding">
           <div class="list-box-controls">
-            <a class="btn btn-danger btn-sm to_delete_user" data-toggle="modal" data-target="#delModal">
+            <a class="btn btn-danger btn-sm to_delete_item" data-toggle="modal" data-target="#delModal">
               <i class="fa fa-trash-o"></i> 删除</a>
             <a class="btn btn-primary btn-sm item_edit">
               <i class="fa fa-pencil-square-o"></i> 修改</a>
@@ -40,7 +40,7 @@
               <i class="fa fa-plus"></i> 添加</a>
 
             <div class="pull-right">
-              {{ pagination_widget(pagination, '.awards', 'pagination-sm') }}
+              {{ pagination_widget(pagination, '.awards', 'pagination-sm', id=contest.id) }}
             </div>
           </div>
           <table class="table table-bordered awards-table">
@@ -53,20 +53,22 @@
               <th>审核状态</th>
             </tr></thead>
             <tbody>
-            {% if awards_list %}
+            {% if not awards_list %}
+              <tr><td colspan="6"><h2>无数据</h2></td></tr>
+            {% else %}
             {% for awards in awards_list %}
-              <tr>
+              <tr id="awards{{ awards.id }}">
                 <td><label><input type="radio" name="awards" value="{{ awards.id }}"></label></td>
                 <td>{{ awards.awards_id }}</td>
                 <td>{{ awards.level }}</td>
                 <td>{% for student in awards.students %}
-                  {{ student.name }}
+                  {{ student.name }}&nbsp;
                 {% endfor %}</td>
                 <td>{% for teacher in awards.teachers %}
-                  {{ teacher.name }}
+                  {{ teacher.name }}&nbsp;
                 {% endfor %}</td>
                 <td>
-                  {% if awards.process == '正式定档' %}
+                  {% if awards.process == process[2] %}
                     <label class="label bg-green">{{ awards.result }}</label>
                   {% else %}
                     <label class="label bg-red">{{ awards.process }}</label>
@@ -74,96 +76,35 @@
                 </td>
               </tr>
             {% endfor %}
-            {% else %}
-              <tr><td colspan="6"><h2>无数据</h2></td></tr>
             {% endif %}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-    <div class="col-md-12" style="display: none">
-      <div class="box box-primary">
-        <div class="box-header with-border">
-          <h3 class="box-title">奖项录入</h3>
+  </div>
+
+    <!-- Modal -->
+  <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="myModalLabel">警告</h4>
         </div>
-        <form method="post" class="form-horizontal">
-          <div class="box-body">
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">作品名称</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="inputPassword3" placeholder="作品名称">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">获奖等级</label>
-              <div class="col-sm-10">
-                <select class="form-control">
-                  <option>全国一等奖</option>
-                  <option>全国二等奖</option>
-                  <option>全国三等奖</option>
-                  <option>省级一等奖</option>
-                  <option>省级二等奖</option>
-                  <option>省级三等奖</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">获奖类型</label>
-
-              <div class="col-sm-10">
-                <label class="radio-inline">
-                  <input type="radio" id="inlineCheckbox1" value="1" name="awards_type"> 个人
-                </label>
-                <label class="radio-inline">
-                  <input type="radio" id="inlineCheckbox2" value="2" name="awards_type"> 团体
-                </label>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">获奖学生</label>
-
-              <div class="col-sm-10">
-                <select class="form-control">
-                  <option>学生1</option>
-                  <option>学生2</option>
-                  <option>学生3</option>
-
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">指导教师</label>
-
-              <div class="col-sm-10">
-                <select class="form-control">
-                  <option>老师1</option>
-                  <option>老师2</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">上传附件</label>
-
-              <div class="col-sm-10">
-                <input type="file" id="exampleInputFile">
-              </div>
-            </div>
-
-          </div>
-          <!-- /.box-body -->
-          <div class="box-footer text-center">
-            <button type="submit" class="btn btn-primary">提交</button>
-          </div>
-          <!-- /.box-footer -->
-        </form>
+        <div class="modal-body">
+          <h4>是否确定删除此奖项</h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-danger del-items">确定</button>
+        </div>
       </div>
     </div>
   </div>
+
 {% endblock %}
 
 {% block script %}
@@ -177,6 +118,7 @@
     }
     $(document).ready(function () {
       make_iCheck();
+
       $('.item_edit').on('click', function () {
         var $check = $('input[name="awards"]:checked');
         if ($check.length <= 0) {
@@ -186,6 +128,27 @@
         var id = $check.val();
         window.location.href = url + id;
       });
+
+      $('.to_delete_item').on('click', function() {
+        var $check = $('input[name="awards"]:checked');
+        if ($check.length <= 0) {
+          return false;
+        }
+        var id = $check.val();
+        $('.del-items').data('awards', id);
+      });
+      $('.del-items').on('click', function() {
+        var url = "{{ url_for('admin.awards_del') }}";
+        var id = $(this).data('awards');
+        var data = { 'awards_id' : id };
+        $('#delModal').modal('hide');
+        $.post(url, data, function(response) {
+          if (response.ret == 'OK') {
+            $('#awards' + id).fadeOut(1200, function(){ $(this).remove(); });
+          }
+        });
+      });
+
     });
   </script>
 {% endblock %}
