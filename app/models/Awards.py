@@ -5,19 +5,22 @@ from . import db, Contest, Resource
 
 
 awards_teacher = db.Table('awards_teacher',
-    db.Column('awards_id', db.Integer, db.ForeignKey('awards.id', ondelete="CASCADE")),
-    db.Column('teacher_id', db.Integer, db.ForeignKey('teacher.id', ondelete="CASCADE"))
+    db.Column('awards', db.String(128), db.ForeignKey('awards.awards_id', ondelete="CASCADE")),
+    db.Column('teacher', db.Integer, db.ForeignKey('teacher.id', ondelete="CASCADE"))
 )
 
 awards_student = db.Table('awards_student',
-    db.Column('awards_id', db.Integer, db.ForeignKey('awards.id', ondelete="CASCADE")),
-    db.Column('student_id', db.Integer, db.ForeignKey('student.id', ondelete="CASCADE"))
+    db.Column('awards', db.String(128), db.ForeignKey('awards.awards_id', ondelete="CASCADE")),
+    db.Column('student', db.String(64), db.ForeignKey('student.stu_no', ondelete="CASCADE"))
 )
 
 AwardsLevel = [
-    u'一等奖',
-    u'二等奖',
-    u'三等奖'
+    u'省级一等奖',
+    u'省级二等奖',
+    u'省级三等奖',
+    u'国家级一等奖',
+    u'国家级二等奖',
+    u'国家级三等奖',
 ]
 
 AwardsType = [
@@ -42,6 +45,7 @@ class Awards(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     awards_id = db.Column(db.String(128), nullable=False,
                           unique=True, index=True)
+    honor = db.Column(db.Unicode(128))
     level = db.Column(db.Unicode(128))
     title = db.Column(db.Unicode(512))
     type = db.Column(db.Unicode(32))
@@ -122,6 +126,8 @@ def create_awards(awards_form, contest, files):
         awards = Awards()
         awards.awards_id = generate_next_awards_id(contest)
         awards.level = awards_form.level.data
+        if awards_form.honor.data == '':
+            awards.honor = awards_form.level.data
         awards.title = awards_form.title.data
         awards.type = awards_form.type.data
         awards.contest = contest
@@ -142,6 +148,8 @@ def create_awards(awards_form, contest, files):
 def update_awards(awards, awards_form, files):
     try:
         awards.level = awards_form.level.data
+        if awards_form.honor.data == '':
+            awards.honor = awards_form.level.data
         awards.title = awards_form.title.data
         awards.type = awards_form.type.data
         awards.teachers = awards_form.get_teacher_list()

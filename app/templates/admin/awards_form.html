@@ -1,11 +1,12 @@
 {% extends "admin/base.html" %}
-{% from "macro/_form_horizontal.html" import render_form_field, render_select_field %}
+{% from "macro/_form_horizontal.html" import render_form_field, render_select_field, render_radio_field %}
 {% from "macro/_flash_alert.html" import render_flash_alert %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/select2/select2.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/select2/select2-bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='plugins/bootstrap-fileinput/css/fileinput.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/iCheck/square/blue.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/bootstrap-tagsinput/bootstrap-tagsinput.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/typeahead/typeahead.css') }}"/>
 {% endblock %}
 
 {% block content_header %}
@@ -32,13 +33,13 @@
           <div class="box-body">
             {{ awards_form.hidden_tag() }}
             {{ render_form_field(awards_form.title, id='inputTitle') }}
+            {{ render_form_field(awards_form.honor,id='inputHonor') }}
             {{ render_form_field(awards_form.level, id='inputLevel') }}
-            {{ render_form_field(awards_form.type, id='inputType') }}
-            {{ render_select_field(awards_form.teachers, id='inputTeachers') }}
-            {{ render_select_field(awards_form.students, id='inputStudents') }}
+            {{ render_radio_field(awards_form.type, id='inputType') }}
+            {{ render_select_field(awards_form.teachers, id='inputTeachers', placeholder='输入教师姓名') }}
+            {{ render_select_field(awards_form.students, id='inputStudents', placeholder="输入学生学号") }}
             <div class="form-group">
               <label class="control-label col-sm-2" for="inputFile">相关图片</label>
-
               <div class="col-sm-9">
                 <input id="inputFile" name="files" type="file" multiple>
               </div>
@@ -81,6 +82,7 @@
       </div>
     </div>
   </div>
+  {% if exist_resources %}
   <!-- Modal -->
   <div class="modal fade" id="delRes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-sm" role="document">
@@ -101,24 +103,73 @@
       </div>
     </div>
   </div>
+  {% endif %}
 {% endblock %}
 
 {% block script %}
-  <script src="{{ url_for('static', filename='plugins/select2/select2.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='plugins/select2/i18n/zh-CN.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/iCheck/icheck.min.js') }}"></script>
   <script src="{{ url_for('static', filename='plugins/bootstrap-fileinput/js/fileinput.min.js') }}"></script>
   <script src="{{ url_for('static', filename='plugins/bootstrap-fileinput/js/fileinput_locale_zh.js') }}"></script>
   <script src="{{ url_for('static', filename='plugins/masonry/masonry.pkgd.min.js') }}"></script>
   <script src="{{ url_for('static', filename='plugins/imagesloaded/imagesloaded.pkgd.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/bootstrap-tagsinput/bootstrap-tagsinput.js') }}"></script>
+  <script src="{{ url_for('static', filename='plugins/typeahead/typeahead.bundle.js') }}"></script>
   <script>
-    $(document).ready(function () {
-      $('#inputTeachers, #inputStudents').select2({
-        theme: "bootstrap",
-        language: "zh-CN",
-        tags: true,
-        tokenSeparators: [','],
-        width: '100%'
+    function make_iCheck() {
+      $('input[type="checkbox"], input[type="radio"]').iCheck({
+        checkboxClass: 'icheckbox_square-blue',
+        radioClass: 'iradio_square-blue'
       });
+    }
+    function make_typeahead() {
+      var engine = new Bloodhound({
+        queryTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        identify: function(obj) { return obj.id; },
+        prefetch: "{{ url_for('admin.teachers_json') }}",
+        remote: {
+          url: "{{ url_for('admin.teachers_json', query='') }}" + '%QUERY',
+          wildcard: '%QUERY',
+          filter: function(response) {
+            return response.teachers;
+          }
+        }
+      });
+      engine.initialize();
+      $('#inputTeachers').typeahead({
+        highlight: true,
+        hint: false
+      }, {
+        name: 'teachers',
+        display: 'name',
+        templates: {
+          suggestion: function(obj) {
+            return "<p>" + obj.name + " - " + obj.department + "</p>";
+          }
+        },
+        source: engine
+      });
+    }
+    function make_tagsinput() {
+      var $elt  = $('input[id="inputStudents"]');
+      $elt.tagsinput({
+        tagClass: function(item) {
+          return 'label label-primary';
+        },
+        trimValue: true
+      });
+
+      $elt.on('beforeItemAdd', function(event) {
+        if (event.item.length != 10) {
+          alert("错误的学号格式");
+          event.cancel = true;
+        }
+      });
+    }
+    $(document).ready(function () {
+      make_iCheck();
+      make_typeahead();
+      make_tagsinput();
 
       $('#inputFile').fileinput({
         language: 'zh',

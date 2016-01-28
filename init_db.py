@@ -7,7 +7,7 @@ from app.models import User, ContestSeries, Contest, Awards, \
 
 if __name__ == "__main__":
     app = Flask(__name__)
-    app.config.from_object(config['deploy'])
+    app.config.from_object(config['default'])
     db.init_app(app)
     with app.app_context():
         db.drop_all()

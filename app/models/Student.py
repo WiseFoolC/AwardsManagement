@@ -6,7 +6,7 @@ from . import db
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    stu_no = db.Column(db.String(32), nullable=False,
+    stu_no = db.Column(db.String(64), nullable=False,
                        unique=True, index=True)
     name = db.Column(db.Unicode(128))
     department = db.Column(db.Unicode(128))

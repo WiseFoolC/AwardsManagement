@@ -2,6 +2,8 @@
 import traceback
 from flask import current_app
 from . import db
+from sqlalchemy import or_
+
 
 
 class Teacher(db.Model):
@@ -20,21 +22,40 @@ class Teacher(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'department': self.department
+        }
+
 
 def get_by_id(id):
     return Teacher.query.filter(Teacher.id == id).first()
 
+def get_by_name(name):
+    return Teacher.query.filter(Teacher.name == name).first()
 
 def get_list_by_name(name):
     return Teacher.query.filter(Teacher.name == name).all()
+
+
+def is_exist(name, department):
+    has = Teacher.query.filter(Teacher.name == name
+                               and Teacher.department == department).first()
+    return has != None
 
 
 def get_list_by_department(department):
     return Teacher.query.filter(Teacher.department == department).all()
 
 
-def get_all():
-    return Teacher.query.all()
+def get_all(keyword=None):
+    query = Teacher.query
+    if keyword:
+        keyword = '%' + keyword + '%'
+        query = query.filter(or_(Teacher.name.like(keyword), Teacher.department.like(keyword)))
+    return query.all()
 
 
 def get_count():

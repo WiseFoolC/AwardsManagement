@@ -20,7 +20,7 @@ def login():
             flash(u'密码错误')
         else:
             login_user(user, remember=login_form.remember_me.data)
-            return redirect(url_for('admin.index'))
+            return redirect(url_for('admin.contest'))
     return render_template('login.html',
                            login_form = login_form)
 
@@ -306,15 +306,19 @@ def teacher_edit(id):
 @login_required
 def contest():
     page = request.args.get('page', 1, type=int)
+    filter_pass = request.args.get('filter_pass', 0, type=int)
     per_page = current_app.config['ADMIN_CONTEST_PER_PAGE']
+    department = current_user.department if current_user.department != u'教务处' else None
     if page == -1:
-        page = ((Contest.get_count() - 1) // per_page) + 1
-    pagination = Contest.get_list_pageable(page, per_page)
+        page = ((Contest.get_count(filter_pass, department) - 1) // per_page) + 1
+    pagination = Contest.get_list_pageable(page, per_page, filter_pass,
+                                           department)
     contest_list = pagination.items
     return render_template('admin/contest.html',
                            title = u'竞赛管理',
                            contest_list = contest_list,
-                           pagination = pagination)
+                           pagination = pagination,
+                           filter_pass = filter_pass)
 
 
 @admin.route('/contest/del', methods=['POST'])
@@ -333,14 +337,16 @@ def contest_del():
 @login_required
 def contest_add():
     contest_form = ContestForm()
+    contest_form.department.data = current_user.department
     if request.method == 'POST' and contest_form.validate():
-        ret = Contest.create_contest(contest_form)
+        ret = Contest.create_contest(contest_form, request)
         if ret == 'OK':
             return redirect(url_for('admin.contest'))
         elif ret == 'FAIL':
             flash(u'提交失败')
         else:
             flash(ret)
+    current_app.logger.error(contest_form.errors)
     return render_template('admin/contest_form.html',
                            title = u'添加竞赛',
                            action = url_for('admin.contest_add'),
@@ -352,25 +358,30 @@ def contest_add():
 def contest_edit(id):
     contest = Contest.get_by_id(id)
     contest_form = ContestForm()
+    contest_form.department.data = current_user.department
     if request.method == 'GET':
         contest_form.name_cn.data = contest.name_cn
         contest_form.name_en.data = contest.name_en
         contest_form.level.data = contest.level
-        contest_form.series_id.data = contest.series.id
+        contest_form.type.data = contest.type
+        contest_form.department.data = contest.department
+        if contest.series:
+            contest_form.series_id.data = contest.series.id
         contest_form.year.data = contest.year
         contest_form.date_range.data = [contest.start_date.strftime('%Y/%m/%d'),
                                         contest.end_date.strftime('%Y/%m/%d')]
         contest_form.organizer.data = contest.organizer
         contest_form.co_organizer.data = contest.co_organizer
-        contest_form.place.data = contest.place
     if request.method == 'POST' and contest_form.validate():
-        ret = Contest.update_contest(contest, contest_form)
+        ret = Contest.update_contest(contest, contest_form, request)
         if ret == 'OK':
             return redirect(url_for('admin.contest'))
         elif ret == 'FAIL':
             flash(u'提交失败')
         else:
             flash(ret)
+        print ret
+    current_app.logger.error(contest_form.errors)
     return render_template('admin/contest_form.html',
                            title = u'修改竞赛',
                            action = url_for('admin.contest_edit', id=id),
@@ -435,11 +446,14 @@ def awards_edit(id, awards_id):
     exist_resources = awards.resources
     awards_form = AwardsForm()
     if request.method == 'GET':
+        awards_form.honor.data = awards.honor
         awards_form.level.data = awards.level
         awards_form.title.data = awards.title
         awards_form.type.data = awards.type
-        awards_form.teachers.data = [t.id for t in awards.teachers]
-        awards_form.students.data = [s.id for s in awards.students]
+        if awards.teachers:
+            teacher = awards.teachers[0]
+            awards_form.teachers.data = teacher.name
+        awards_form.students.data = [s.stu_no for s in awards.students]
     if request.method == 'POST' and awards_form.validate():
         ret = Awards.update_awards(awards, awards_form, request.files)
         if ret == 'OK':
@@ -467,32 +481,17 @@ def resource_del():
     return jsonify(ret = ret)
 
 
-@admin.route('/apply', methods=['GET'])
+@admin.route('/teachers.json', methods=['GET'])
 @login_required
-def apply():
-    page = request.args.get('page', 1, type=int)
-    per_page = current_app.config['ADMIN_APPLY_PER_PAGE']
-    if page == -1:
-        page = ((Awards.get_count(level=current_user.level) - 1) // per_page) + 1
-    pagination = Awards.get_list_pageable(page, per_page,
-                                          level=current_user.level)
-    awards_list = pagination.items
-    return render_template('admin/apply.html',
-                           title = u'待审核',
-                           awards_list = awards_list,
-                           pagination = pagination,
-                           awards_result = Awards.AwardsResult)
+def teachers_json():
+    query = request.args.get('query', None)
+    teachers = Teacher.get_all(query)
+    return jsonify(teachers = [t.to_json() for t in teachers])
 
 
-@admin.route('/apply/pass', methods=['POST'])
+@admin.route('/print/contest/<id>', methods=['GET'])
 @login_required
-def pass_apply():
-    opt = request.form.get('opt', -1, type=int)
-    apply_id = request.form.get('apply_id', -1, type=int)
-    result = request.form.get('result', -1, type=int)
-    if opt == -1 or apply_id == -1:
-        ret = u'非法操作'
-    else:
-        awards = Awards.get_by_id(apply_id)
-        ret = Awards.pass_awards(awards, opt, result)
-    return jsonify(ret = ret)
+def contest_print(id):
+    contest = Contest.get_by_id(id)
+    return render_template('print/contest.html',
+                           contest = contest)

@@ -18,6 +18,27 @@
     </div>
 {% endmacro %}
 
+{% macro render_form_field_sm(field, id) %}
+  {% if field.errors %}
+    <div class="form-group has-error has-feedback">
+  {% else %}
+    <div class="form-group has-feedback">
+  {% endif %}
+      {{ field.label(for=id, class="col-sm-4 control-label") }}
+      <div class="col-sm-7">
+        {{ field(class="form-control", id=id, width="100%", **kwargs) | safe }}
+        {% if field.errors %}
+          <small class="help-block" data-bv-for={{ id }}>
+            {% for error in field.errors %}
+              {{ error }}<br>
+            {% endfor %}
+          </small>
+        {% endif %}
+      </div>
+    </div>
+{% endmacro %}
+
+
 {% macro render_radio_field(field, id) %}
   {% if field.errors %}
     <div class="form-group has-error has-feedback">

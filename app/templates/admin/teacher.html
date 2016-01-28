@@ -38,7 +38,7 @@
             </tr></thead>
             <tbody>
             {% if not teacher_list %}
-              <tr><td colspan="3"><h2>无数据</h2></td></tr>
+              <tr><td colspan="4"><h2>当前无教师信息</h2></td></tr>
             {% else %}
             {% for teacher in teacher_list %}
               <tr id="teacher{{ teacher.id }}">

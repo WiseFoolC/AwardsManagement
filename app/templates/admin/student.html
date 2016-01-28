@@ -35,21 +35,22 @@
             <thead><tr>
               <th class="col-check">选择</th><th>学号</th>
               <th class="col-name">姓名</th><th>院系</th>
-              <th>班级</th>
+              <th>专业年级</th>
             </tr></thead>
             <tbody>
             {% if not student_list %}
-              <tr><td colspan="5"><h2>无数据</h2></td></tr>
+              <tr><td colspan="5"><h2>当前无学生信息</h2></td></tr>
             {% else %}
             {% for student in student_list %}
               <tr id="student{{ student.id }}">
               <td class="col-check">
                 <label><input type="radio" name="student" value="{{ student.id }}"></label>
               </td>
-              <td>{{ student.stu_no }}</td>
+              <td><b>{{ student.stu_no }}</b></td>
               <td class="col-name">{{ student.name }}</td>
               <td>{{ student.department if student.department else '' }}</td>
-              <td>{{ student.major }}{{ student.grade }}级</td>
+              <td>{{ student.major if student.major else '' }}
+                {{ student.grade + '级' if student.grade else '' }}</td>
               </tr>
             {% endfor %}
             {% endif %}

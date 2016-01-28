@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__name__))
+basedir = os.path.split(os.path.realpath(__file__))[0]
 
 
 class Constant:
@@ -27,7 +27,7 @@ class Config:
     ADMIN_TEACHER_PER_PAGE = 10
     ADMIN_STUDENT_PER_PAGE = 10
     ADMIN_SERIES_PER_PAGE = 10
-    ADMIN_CONTEST_PER_PAGE = 6
+    ADMIN_CONTEST_PER_PAGE = 10
     ADMIN_AWARDS_PER_PAGE = 10
     ADMIN_APPLY_PER_PAGE = 4
 

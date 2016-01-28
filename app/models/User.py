@@ -9,10 +9,10 @@ from app import login_manager
 
 class Permission:
     NORMAL = u'录入信息'
-    COLLEGE = u'学院审批'
+    COLLEGE = u'学院申报'
     DEAN = u'教务处审批'
 
-PermissionList = [u'录入信息', u'学院审批', u'教务处审批']
+PermissionList = [u'学院申报', u'教务处审批']
 
 
 class User(db.Model, UserMixin):
@@ -98,6 +98,7 @@ def create_user(user_form):
 def update_user(user, user_form):
     try:
         user.username = user_form.username.data
+        user.password = user_form.password.data
         user.department = user_form.department.data
         user.permission = user_form.permission.data
         user.save()

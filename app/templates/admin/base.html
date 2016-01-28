@@ -52,16 +52,19 @@
   <div class="main-sidebar">
     <section class="sidebar" style="height: auto;">
       <ul class="sidebar-menu">
-        <li class="header">导航</li>
-        {% if current_user.level == 3 %}
+        {% if current_user.level == 2 %}
+        <li class="header">系统设置</li>
         <li><a href="{{ url_for('admin.user') }}"><i class="fa fa-users"></i> <span>用户管理</span></a></li>
-        {% endif %}
         <li><a href="{{ url_for('admin.student') }}"><i class="fa fa-bicycle"></i> <span>学生管理</span></a></li>
         <li><a href="{{ url_for('admin.teacher') }}"><i class="fa fa-graduation-cap"></i> <span>教师管理</span></a></li>
-        <li><a href="{{ url_for('admin.series') }}"><i class="fa fa-leaf"></i> <span>竞赛系列管理</span></a></li>
+        {% endif %}
+
+        <li class="header">工作</li>
         <li><a href="{{ url_for('admin.contest') }}"><i class="fa fa-trophy"></i> <span>竞赛管理</span></a></li>
-        {% if current_user.level > 1 %}
-        <li><a href="{{ url_for('admin.apply') }}"><i class="fa fa-unlock"></i> <span>待审批</span></a></li>
+        {% if current_user.level == 1 %}
+          <li><a href="{{ url_for('admin.contest_add') }}"><i class="fa fa-plus"></i> 录入竞赛</a></li>
+        {% else %}
+          <li><a href="{{ url_for('admin.series') }}"><i class="fa fa-leaf"></i> <span>竞赛系列管理</span></a></li>
         {% endif %}
       </ul>
     </section>

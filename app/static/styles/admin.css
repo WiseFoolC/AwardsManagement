@@ -69,13 +69,38 @@ td.col-name {
   vertical-align: middle !important;
 }
 
+
+.widget-user-header .big-title {
+  margin-top: 5px !important;
+}
+
+.widget-user-header .front-panel {
+  padding-left: 0!important;
+  padding-right: 0!important;
+}
+
 .widget-user-header .front {
-  margin-right: 5px;
-  width: 80px;
-  display: inline-block;
+  display: inline;
+  padding-left: 0!important;
 }
 .widget-user-header .front .fa {
-  margin-right: 2px;
+  margin-right: 3px;
+}
+.widget-user-header .front .title {
+  width: 90px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.widget-user-header .front .body {
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: keep-all;
+  vertical-align: middle;
+}
+
+.box-widget tr {
+  height: 80%;
 }
 
 
@@ -142,4 +167,18 @@ td.col-name {
 .exist_res {
   padding-left: 5px !important;
   padding-right: 5px !important;
+}
+
+.form-group .form-inline {
+}
+
+.form-group .form-inline .form-group {
+  margin-left: 10px;
+  margin-right: 0;
+  margin-bottom: 10px;
+  width: 46%;
+}
+
+.form-group .form-inline .form-group .form-control {
+  width: 100%;
 }

@@ -6,5 +6,5 @@ from . import main
 @main.route('/')
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for('admin.index'))
+        return redirect(url_for('admin.contest'))
     return redirect(url_for('admin.login'))

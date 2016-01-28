@@ -2,9 +2,7 @@
 {% from "macro/_page.html" import pagination_widget %}
 {% from "macro/_flash_alert.html" import render_flash_alert %}
 
-
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/iCheck/square/blue.css') }}"/>
 {% endblock %}
 
 {% block content %}
@@ -25,39 +23,39 @@
         </div>
         <div class="box-body no-padding">
           <div class="list-box-controls">
-            <a class="btn btn-danger btn-sm to_delete_item" data-toggle="modal" data-target="#delModal">
-              <i class="fa fa-trash-o"></i> 删除</a>
-            <a class="btn btn-primary btn-sm item_edit"><i class="fa fa-pencil-square-o"></i> 修改</a>
             <a class="btn btn-primary btn-sm" href="{{ url_for('admin.series_add') }}"><i class="fa fa-plus"></i>
               添加</a>
+            <div class="pull-right">
+              {{ pagination_widget(pagination, '.series') }}
+            </div>
           </div>
-          <table class="table table-bordered table-striped" style="text-align: center">
+          <table class="table table-bordered table-condensed" style="text-align: center">
             <thead><tr>
-              <th class="col-check">选择</th>
               <th class="col-name">名称</th>
+              <th width="20%">操作</th>
             </tr></thead>
             <tbody>
             {% if not series_list %}
-              <tr><td colspan="2"><h2>无数据</h2></td></tr>
+              <tr><td colspan="2"><h2>当前无竞赛系列信息</h2></td></tr>
             {% else %}
             {% for series in series_list %}
               <tr id="series{{ series.id }}">
-              <td class="col-check">
-                <label><input type="radio" name="series" value="{{ series.id }}"></label>
-              </td>
               <td class="col-name">{{ series.name }}</td>
+              <td>
+                <div class="btn-group">
+                  <a class="btn btn-default btn-flat" href="{{ url_for('admin.series_edit', id=series.id) }}">
+                    <i class="fa fa-pencil-square-o"></i> 修改</a>
+                  <a class="btn btn-default btn-flat to_delete_item" data-toggle="modal" data-target="#delModal"
+                          data-id="{{ series.id }}"> <i class="fa fa-trash-o"></i> 删除</a>
+                </div>
+              </td>
               </tr>
             {% endfor %}
             {% endif %}
             </tbody>
           </table>
         </div>
-        <!-- /.box-body -->
-        <div class="box-footer clearfix">
-          <div class="pull-right">
-            {{ pagination_widget(pagination, '.series') }}
-          </div>
-        </div>
+
       </div>
     </div>
 
@@ -85,32 +83,12 @@
 {% endblock %}
 
 {% block script %}
-  <script src="{{ url_for('static', filename='plugins/iCheck/icheck.min.js') }}"></script>
   <script>
-    function make_iCheck() {
-      $('.table input[type="checkbox"], .table input[type="radio"]').iCheck({
-        checkboxClass: 'icheckbox_square-blue',
-        radioClass: 'iradio_square-blue'
-      });
-    }
+
     $(document).ready(function() {
-      make_iCheck();
-      $('.item_edit').on('click', function() {
-        var $check = $('input[name="series"]:checked');
-        if ($check.length <= 0) {
-          return false;
-        }
-        var url = "{{ url_for('admin.series_edit', id='') }}";
-        var id = $check.val();
-        window.location.href = url + id;
-      });
 
       $('.to_delete_item').on('click', function() {
-        var $check = $('input[name="series"]:checked');
-        if ($check.length <= 0) {
-          return false;
-        }
-        var id = $check.val();
+        var id = $(this).data('id');
         $('.del-item').data('series', id);
       });
       $('.del-item').on('click', function() {

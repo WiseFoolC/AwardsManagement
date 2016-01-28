@@ -4,10 +4,25 @@ from flask import current_app
 from . import db, ContestSeries, Resource
 from datetime import date
 
-ContestLevel = {
-    'nation' : u'国家级',
-    'province' : u'省级'
-}
+ContestLevel = [
+    u'省级',
+    u'国家级'
+]
+
+ContestType = [
+    u'学科竞赛',
+    u'体育竞赛',
+    u'创新创业竞赛',
+    u'其它'
+]
+
+ContestResult = [
+    u'未定档',
+    u'一档',
+    u'二档',
+    u'三档',
+    u'四档'
+]
 
 
 class Contest(db.Model):
@@ -16,7 +31,10 @@ class Contest(db.Model):
                            nullable=False, index=True)
     name_cn = db.Column(db.Unicode(512))
     name_en = db.Column(db.String(512))
-    level = db.Column(db.Unicode())
+    level = db.Column(db.Unicode(32))   # 竞赛等级
+    result = db.Column(db.Unicode(32))  # 竞赛审核结果
+    type = db.Column(db.Unicode(32))    # 竞赛类型
+    department = db.Column(db.Unicode(128))
     organizer = db.Column(db.Unicode(512))
     co_organizer = db.Column(db.Unicode(512))
     year = db.Column(db.Integer)
@@ -27,7 +45,7 @@ class Contest(db.Model):
 
     series_name = db.Column(db.Unicode(256),
                             db.ForeignKey('contest_series.name', ondelete="CASCADE"),
-                            nullable=False)
+                            nullable=True)
     series = db.relationship('ContestSeries',
                              backref=db.backref('contests',
                                                 cascade="all, delete-orphan",
@@ -36,6 +54,10 @@ class Contest(db.Model):
 
     def __repr__(self):
         return '<Contest %s %s>' % (self.contest_id, self.name_cn)
+
+    @property
+    def is_pass(self):
+        return self.result and self.result != ContestResult[0]
 
     def save(self):
         db.session.add(self)
@@ -63,29 +85,51 @@ def get_by_id(id):
     return Contest.query.filter(Contest.id == id).first()
 
 
-def get_count():
-    return Contest.query.count()
+def get_count(filter_pass=0, department=None):
+    query = Contest.query
+    if filter_pass == 1:
+        query = query.filter(Contest.result == ContestResult[0])
+    elif filter_pass == -1:
+        query = query.filter(Contest.result != ContestResult[0])
+    if department:
+        query = query.filter(Contest.department == department)
+    return query.count()
 
 
-def get_list_pageable(page, per_page):
-    return Contest.query.order_by(Contest.id)\
+def get_list_pageable(page, per_page, filter_pass=0, department=None):
+    query = Contest.query
+    if filter_pass == 1:
+        query = query.filter(Contest.result == ContestResult[0])
+    elif filter_pass == -1:
+        query = query.filter(Contest.result != ContestResult[0])
+    if department:
+        query = query.filter(Contest.department == department)
+    return query.order_by(Contest.id)\
         .paginate(page, per_page, error_out=False)
 
 
-def create_contest(contest_form):
+def create_contest(contest_form, request):
     try:
         contest = Contest()
         contest.contest_id = generate_next_contest_id(contest_form.year.data)
         contest.name_cn = contest_form.name_cn.data
         contest.name_en = contest_form.name_en.data
         contest.level = contest_form.level.data
+        contest.result = ContestResult[0]
+        contest.type = contest_form.type.data
+        contest.department = contest_form.department.data
         contest.organizer = contest_form.organizer.data
         contest.co_organizer = contest_form.co_organizer.data
         contest.year = contest_form.year.data
         contest.start_date = contest_form.date_range.data[0]
         contest.end_date = contest_form.date_range.data[1]
-        contest.place = contest_form.place.data
-        contest.series = ContestSeries.get_by_id(contest_form.series_id.data)
+        city = request.form.get('prov', '') + \
+               request.form.get('city', '') + \
+               request.form.get('dist', '')
+        contest.place = city + contest_form.place.data
+        series = ContestSeries.get_by_id(contest_form.series_id.data)
+        if series:
+            contest.series = series
         contest.save()
         current_app.logger.info(u'录入竞赛 %s 成功', contest.name_cn)
         return 'OK'
@@ -95,18 +139,25 @@ def create_contest(contest_form):
         return 'FAIL'
 
 
-def update_contest(contest, contest_form):
+def update_contest(contest, contest_form, request):
     try:
         contest.name_cn = contest_form.name_cn.data
         contest.name_en = contest_form.name_en.data
         contest.level = contest_form.level.data
+        contest.type = contest_form.type.data
+        contest.department = contest_form.department.data
         contest.organizer = contest_form.organizer.data
         contest.co_organizer = contest_form.co_organizer.data
         contest.year = contest_form.year.data
         contest.start_date = contest_form.date_range.data[0]
         contest.end_date = contest_form.date_range.data[1]
-        contest.place = contest_form.place.data
-        contest.series = ContestSeries.get_by_id(contest_form.series_id.data)
+        city = request.form.get('prov', '') + \
+               request.form.get('city', '') + \
+               request.form.get('dist', '')
+        contest.place = city + contest_form.place.data
+        series = ContestSeries.get_by_id(contest_form.series_id.data)
+        if series:
+            contest.series = series
         contest.save()
         current_app.logger.info(u'更新竞赛 %s 成功', contest.name_cn)
         return 'OK'
