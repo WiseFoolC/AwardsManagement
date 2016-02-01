@@ -63,17 +63,18 @@
               <td>{{ contest.organizer }}</td>
               <td>
                 <div class="btn-group btn-group-sm">
-
-                  {% if not contest.is_pass %}
-                    <a class="btn btn-primary btn-flat btn-sm" data-toggle="modal" data-target="#applyModal"
-                          data-id="{{ contest.id }}"><i class="fa fa-flag"></i> 审核</a>
+                  {% if contest.is_pass %}
+                    <a target="_blank" href="{{ url_for('admin.awards', id=contest.id) }}">管理奖项</a>
+                  {% else %}
+                    {% if current_user.level == 2 %}
+                      <a class="btn btn-primary btn-flat btn-sm" data-toggle="modal" data-target="#applyModal"
+                            data-id="{{ contest.id }}"><i class="fa fa-flag"></i> 审核</a>
+                    {% endif %}
                     <a class="btn btn-default btn-flat btn-sm" href="{{ url_for('admin.contest_edit', id=contest.id) }}">
                           <i class="fa fa-pencil-square-o"></i> 修改</a>
-                    <a class="btn btn-default btn-flat btn-sm" data-toggle="modal" data-target="#delModal"
-                          data-id="{{ contest.id }}"> <i class="fa fa-trash-o"></i> 删除</a>
-
                   {% endif %}
-
+                  <a class="btn btn-default btn-flat btn-sm" data-toggle="modal" data-target="#delModal"
+                     data-id="{{ contest.id }}"> <i class="fa fa-trash-o"></i> 删除</a>
 
                   <div class="btn-group">
                     <button type="button" class="btn btn-default btn-flat btn-sm dropdown-toggle"
@@ -81,7 +82,6 @@
                         更多 <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                      <li><a target="_blank" href="{{ url_for('admin.awards', id=contest.id) }}">管理奖项</a></li>
                       <li><a target="_blank" href="{{ url_for('admin.contest_print', id=contest.id) }}">打印</a></li>
                     </ul>
                   </div>
@@ -142,6 +142,7 @@
 {% block script %}
   <script>
     var filter_pass = '{{ filter_pass }}';
+
     function make_filter_pass() {
       var $input = $('input[name="filter_pass"]');
       $input.each(function() {

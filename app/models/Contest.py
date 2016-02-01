@@ -41,6 +41,7 @@ class Contest(db.Model):
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     place = db.Column(db.Unicode(1024))
+    site = db.Column(db.String(1024))
 
 
     series_name = db.Column(db.Unicode(256),
@@ -118,6 +119,7 @@ def create_contest(contest_form, request):
         contest.result = ContestResult[0]
         contest.type = contest_form.type.data
         contest.department = contest_form.department.data
+        contest.site = contest_form.site.data
         contest.organizer = contest_form.organizer.data
         contest.co_organizer = contest_form.co_organizer.data
         contest.year = contest_form.year.data
@@ -146,6 +148,7 @@ def update_contest(contest, contest_form, request):
         contest.level = contest_form.level.data
         contest.type = contest_form.type.data
         contest.department = contest_form.department.data
+        contest.site = contest_form.site.data
         contest.organizer = contest_form.organizer.data
         contest.co_organizer = contest_form.co_organizer.data
         contest.year = contest_form.year.data

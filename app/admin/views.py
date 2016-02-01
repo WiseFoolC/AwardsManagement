@@ -365,13 +365,15 @@ def contest_edit(id):
         contest_form.level.data = contest.level
         contest_form.type.data = contest.type
         contest_form.department.data = contest.department
+        contest.site = contest_form.site.data
+        contest_form.organizer.data = contest.organizer
+        contest_form.co_organizer.data = contest.co_organizer
         if contest.series:
             contest_form.series_id.data = contest.series.id
         contest_form.year.data = contest.year
         contest_form.date_range.data = [contest.start_date.strftime('%Y/%m/%d'),
                                         contest.end_date.strftime('%Y/%m/%d')]
-        contest_form.organizer.data = contest.organizer
-        contest_form.co_organizer.data = contest.co_organizer
+
     if request.method == 'POST' and contest_form.validate():
         ret = Contest.update_contest(contest, contest_form, request)
         if ret == 'OK':

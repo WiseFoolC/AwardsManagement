@@ -91,6 +91,7 @@ class ContestForm(Form):
     #type = StringField(u'竞赛类型', validators=[MyDataRequired()])
     department = SelectField(u'所属部门', validators=[MyDataRequired()], default="-1")
 
+    site = StringField(u'竞赛官网网址', validators=[Optional()])
     organizer = StringField(u'主办方', validators=[MyDataRequired()])
     co_organizer = StringField(u'承办方', validators=[Optional()])
     year = SelectField(u'年份', coerce=int, default=date.today().year)
