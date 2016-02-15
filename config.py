@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__name__))
+basedir = os.path.split(os.path.realpath(__file__))[0]
 
 
 class Constant:
@@ -25,9 +25,11 @@ class Config:
     ''' admin '''
     ADMIN_USER_PER_PAGE = 10
     ADMIN_TEACHER_PER_PAGE = 10
+    ADMIN_STUDENT_PER_PAGE = 10
     ADMIN_SERIES_PER_PAGE = 10
     ADMIN_CONTEST_PER_PAGE = 10
     ADMIN_AWARDS_PER_PAGE = 10
+    ADMIN_APPLY_PER_PAGE = 4
 
 
 
@@ -37,6 +39,7 @@ class DevConfig(Config):
 
 
 class DeployConfig(Config):
+    SECRET_KEY = 'gefdger3fs'
     SQLALCHEMY_DATABASE_URI = 'mssql+pymssql://dxy:Dxyrjgcxy2015@210.41.228.124:1433/ACMS?charset=utf8'
 
 

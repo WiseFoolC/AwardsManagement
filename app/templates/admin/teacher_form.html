@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 {% from "macro/_form_horizontal.html" import render_form_field %}
+{% from "macro/_flash_alert.html" import render_flash_alert %}
 
 {% block head %}
 {% endblock %}
@@ -27,6 +28,14 @@
             {{ teacher_form.hidden_tag() }}
             {{ render_form_field(teacher_form.name, 'inputName') }}
             {{ render_form_field(teacher_form.department, 'inputDepartment') }}
+
+            <div class="row">
+              <div class="col-sm-offset-2 col-sm-9">
+                {%- with messages = get_flashed_messages() -%}
+                  {{ render_flash_alert(messages) }}
+                {% endwith %}
+              </div>
+            </div>
           </div>
           <!-- /.box-body -->
           <div class="box-footer text-center">

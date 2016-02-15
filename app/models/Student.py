@@ -1,10 +1,13 @@
+# coding=utf-8
+import traceback
 from flask import current_app
 from . import db
 
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    stu_no = db.Column(db.String(32), nullable=False, unique=True)
+    stu_no = db.Column(db.String(64), nullable=False,
+                       unique=True, index=True)
     name = db.Column(db.Unicode(128))
     department = db.Column(db.Unicode(128))
     major = db.Column(db.Unicode(128))
@@ -26,5 +29,68 @@ def get_by_id(id):
     return Student.query.filter(Student.id == id).first()
 
 
+def get_by_stu_no(stu_no):
+    return Student.query.filter(Student.stu_no == stu_no).first()
+
+
 def get_all():
     return Student.query.all()
+
+
+def get_count():
+    return Student.query.count()
+
+
+def get_list_pageable(page, per_page):
+    return Student.query.order_by(Student.stu_no)\
+        .paginate(page, per_page, error_out=False)
+
+
+def create_student(student_form):
+    try:
+        has = get_by_stu_no(student_form.stu_no.data)
+        if has:
+            return u'当前学号的学生信息已存在'
+        student = Student()
+        student.stu_no = student_form.stu_no.data
+        student.name = student_form.name.data
+        student.department = student_form.department.data
+        student.major = student_form.major.data
+        student.grade = student_form.grade.data
+        student.save()
+        current_app.logger.info(u'录入学生 %r 成功', student)
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'录入学生 %s 失败', student_form.stu_no.data)
+        current_app.logger.error(traceback.format_exc())
+        return 'FAIL'
+
+
+def update_student(student, student_form):
+    try:
+        has = get_by_stu_no(student_form.stu_no.data)
+        if has and has.id != student.id:
+            return u'当前学号的学生信息已存在'
+        student.stu_no = student_form.stu_no.data
+        student.name = student_form.name.data
+        student.department = student_form.department.data
+        student.major = student_form.major.data
+        student.grade = student_form.grade.data
+        student.save()
+        current_app.logger.info(u'更新学生 %r 成功', student)
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'更新学生 %r 失败', student)
+        current_app.logger.error(traceback.format_exc())
+        return 'FAIL'
+
+
+def delete_student(student):
+    try:
+        student.delete()
+        current_app.logger.info(u'删除学生成功')
+        return 'OK'
+    except Exception:
+        current_app.logger.error(u'删除学生失败')
+        current_app.logger.error(traceback.format_exc())
+        return 'FAIL'

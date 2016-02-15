@@ -1,4 +1,5 @@
 # coding=utf-8
+import traceback
 from flask import current_app
 from flask.ext.login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,10 +9,10 @@ from app import login_manager
 
 class Permission:
     NORMAL = u'录入信息'
-    COLLEGE = u'学院审批'
+    COLLEGE = u'学院申报'
     DEAN = u'教务处审批'
 
-PermissionList = [u'录入信息', u'学院审批', u'教务处审批']
+PermissionList = [u'学院申报', u'教务处审批']
 
 
 class User(db.Model, UserMixin):
@@ -38,12 +39,18 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def level(self):
+        for i, key in enumerate(PermissionList, 1):
+            if self.permission == key:
+                return i
+
     def save(self):
         db.session.add(self)
         db.session.commit()
 
     def remove(self):
-        db.session.remove(self)
+        db.session.delete(self)
         db.session.commit()
 
 
@@ -84,13 +91,14 @@ def create_user(user_form):
         return 'OK'
     except Exception, e:
         current_app.logger.error(u'添加用户 %s 失败', user_form.username.data)
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'
 
 
 def update_user(user, user_form):
     try:
         user.username = user_form.username.data
+        user.password = user_form.password.data
         user.department = user_form.department.data
         user.permission = user_form.permission.data
         user.save()
@@ -98,7 +106,7 @@ def update_user(user, user_form):
         return 'OK'
     except Exception, e:
         current_app.logger.error(u'更新用户 %s 失败', user_form.username.data)
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'
 
 
@@ -110,5 +118,16 @@ def delete_by_id(id):
         return 'OK'
     except Exception, e:
         current_app.logger.error(u'删除用户 %d 失败', id)
-        current_app.logger.error(e)
+        current_app.logger.error(traceback.format_exc())
+        return 'FAIL'
+
+
+def delete_user(user):
+    try:
+        user.remove()
+        current_app.logger.info(u'删除用户成功')
+        return 'OK'
+    except Exception, e:
+        current_app.logger.error(u'删除用户失败')
+        current_app.logger.error(traceback.format_exc())
         return 'FAIL'

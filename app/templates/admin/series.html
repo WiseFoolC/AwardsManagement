@@ -1,11 +1,20 @@
 {% extends "admin/base.html" %}
 {% from "macro/_page.html" import pagination_widget %}
+{% from "macro/_flash_alert.html" import render_flash_alert %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='plugins/iCheck/square/blue.css') }}"/>
 {% endblock %}
 
 {% block content %}
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="alert alert-danger alert-dismissible" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        <h4><i class="icon fa fa-ban"></i> 错误</h4>
+        <p id="alert-msg"></p>
+      </div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-sm-12">
       <div class="box box-primary">
@@ -14,59 +23,89 @@
         </div>
         <div class="box-body no-padding">
           <div class="list-box-controls">
-            <a class="btn btn-danger btn-sm to_delete_user" data-toggle="modal" data-target="#myModal">
-              <i class="fa fa-trash-o"></i> 删除</a>
-            <a class="btn btn-primary btn-sm item_edit"><i class="fa fa-pencil-square-o"></i> 修改</a>
             <a class="btn btn-primary btn-sm" href="{{ url_for('admin.series_add') }}"><i class="fa fa-plus"></i>
               添加</a>
+            <div class="pull-right">
+              {{ pagination_widget(pagination, '.series') }}
+            </div>
           </div>
-          <table class="table table-bordered table-striped" style="text-align: center">
+          <table class="table table-bordered table-condensed" style="text-align: center">
             <thead><tr>
-              <th class="col-check">选择</th>
               <th class="col-name">名称</th>
+              <th width="20%">操作</th>
             </tr></thead>
             <tbody>
+            {% if not series_list %}
+              <tr><td colspan="2"><h2>当前无竞赛系列信息</h2></td></tr>
+            {% else %}
             {% for series in series_list %}
-              <tr>
-              <td class="col-check">
-                <label><input type="radio" name="series" value="{{ series.id }}"></label>
-              </td>
+              <tr id="series{{ series.id }}">
               <td class="col-name">{{ series.name }}</td>
+              <td>
+                <div class="btn-group">
+                  <a class="btn btn-default btn-flat" href="{{ url_for('admin.series_edit', id=series.id) }}">
+                    <i class="fa fa-pencil-square-o"></i> 修改</a>
+                  <a class="btn btn-default btn-flat to_delete_item" data-toggle="modal" data-target="#delModal"
+                          data-id="{{ series.id }}"> <i class="fa fa-trash-o"></i> 删除</a>
+                </div>
+              </td>
               </tr>
             {% endfor %}
+            {% endif %}
             </tbody>
           </table>
         </div>
-        <!-- /.box-body -->
-        <div class="box-footer clearfix">
-          {{ pagination_widget(pagination, '.series') }}
-        </div>
+
       </div>
     </div>
 
   </div>
+
+<div class="modal fade" id="delModal" tabindex="-1"
+     role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title text-center" id="myModalLabel">警告</h4>
+      </div>
+      <div class="modal-body">
+        <h4>确定删除选定竞赛系列</h4>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-danger del-item">确认</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block script %}
-  <script src="{{ url_for('static', filename='plugins/iCheck/icheck.min.js') }}"></script>
   <script>
-    function make_iCheck() {
-      $('.table input[type="checkbox"], .table input[type="radio"]').iCheck({
-        checkboxClass: 'icheckbox_square-blue',
-        radioClass: 'iradio_square-blue'
-      });
-    }
+
     $(document).ready(function() {
-      make_iCheck();
-      $('.item_edit').on('click', function() {
-        var $check = $('input[name="series"]:checked');
-        if ($check.length <= 0) {
-          return false;
-        }
-        var url = "{{ url_for('admin.series_edit', id='') }}";
-        var id = $check.val();
-        window.location.href = url + id;
+
+      $('.to_delete_item').on('click', function() {
+        var id = $(this).data('id');
+        $('.del-item').data('series', id);
       });
+      $('.del-item').on('click', function() {
+        var url = "{{ url_for('admin.series_del') }}";
+        var id = $(this).data('series');
+        var data = { 'series_id' : id };
+        $('#delModal').modal('hide');
+        $.post(url, data, function(response) {
+          if (response.ret == 'OK') {
+            $('#series' + id).fadeOut(1200, function(){ $(this).remove(); });
+          } else {
+            $('#alert-msg').html(response.ret);
+            $('.alert-danger').fadeIn();
+          }
+        });
+      });
+
     });
   </script>
 {% endblock %}
